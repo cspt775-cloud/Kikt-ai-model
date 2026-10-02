@@ -6,109 +6,140 @@
 <title>KIKT AI Voice Assistant</title>
 
 <style>
-  * { box-sizing: border-box; }
+* {
+  box-sizing: border-box;
+}
 
-  body {
-    margin: 0;
-    padding: 18px;
-    font-family: Arial, sans-serif;
-    background: #eef2f7;
-    color: #172033;
-  }
+body {
+  margin: 0;
+  padding: 18px;
+  font-family: Arial, sans-serif;
+  background: #eef2f7;
+  color: #172033;
+}
 
-  .app {
-    max-width: 520px;
-    margin: 20px auto;
-    padding: 22px;
-    background: white;
-    border-radius: 18px;
-    box-shadow: 0 5px 24px #0001;
-  }
+.app {
+  max-width: 520px;
+  margin: 20px auto;
+  padding: 22px;
+  background: white;
+  border-radius: 18px;
+  box-shadow: 0 5px 24px #0001;
+}
 
-  h2 {
-    text-align: center;
-    color: #1555a5;
-  }
+h2 {
+  text-align: center;
+  color: #1555a5;
+}
 
-  .subtitle {
-    text-align: center;
-    color: #666;
-  }
+.subtitle {
+  text-align: center;
+  color: #666;
+}
 
-  button {
-    width: 100%;
-    border: 0;
-    border-radius: 10px;
-    padding: 15px;
-    margin-top: 10px;
-    font-size: 16px;
-    color: white;
-    cursor: pointer;
-  }
+button {
+  width: 100%;
+  border: 0;
+  border-radius: 10px;
+  padding: 15px;
+  margin-top: 10px;
+  font-size: 16px;
+  color: white;
+  cursor: pointer;
+}
 
-  .start { background: #1769d2; }
-  .mic { background: #16834a; }
-  .send { background: #5b55b8; }
-  .stop { background: #c83232; }
+.start {
+  background: #1769d2;
+}
 
-  #status {
-    margin-top: 15px;
-    padding: 12px;
-    border-radius: 10px;
-    background: #eef3fa;
-    font-size: 14px;
-  }
+.mic {
+  background: #16834a;
+}
 
-  #chat {
-    margin-top: 15px;
-    padding: 15px;
-    min-height: 170px;
-    background: #f5f7fb;
-    border-radius: 12px;
-    white-space: pre-wrap;
-    line-height: 1.6;
-    overflow-wrap: anywhere;
-  }
+.send {
+  background: #5b55b8;
+}
 
-  input {
-    width: 100%;
-    margin-top: 14px;
-    padding: 14px;
-    border: 1px solid #bbb;
-    border-radius: 10px;
-    font-size: 16px;
-  }
+.stop {
+  background: #c83232;
+}
 
-  .note {
-    font-size: 13px;
-    color: #666;
-    line-height: 1.5;
-  }
+#status {
+  margin-top: 15px;
+  padding: 12px;
+  border-radius: 10px;
+  background: #eef3fa;
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+
+#chat {
+  margin-top: 15px;
+  padding: 15px;
+  min-height: 170px;
+  background: #f5f7fb;
+  border-radius: 12px;
+  white-space: pre-wrap;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+input {
+  width: 100%;
+  margin-top: 14px;
+  padding: 14px;
+  border: 1px solid #bbb;
+  border-radius: 10px;
+  font-size: 16px;
+}
+
+.note {
+  font-size: 13px;
+  color: #666;
+  line-height: 1.5;
+}
 </style>
 </head>
 
 <body>
+
 <div class="app">
+
   <h2>KIKT AI Voice Assistant</h2>
   <p class="subtitle">Tamil + English Customer Support Demo</p>
 
-  <button class="start" onclick="startAI()">Start AI</button>
-  <button class="mic" onclick="startMic()">🎙️ Speak to AI</button>
-  <button class="stop" onclick="stopAI()">Stop Voice</button>
+  <button class="start" onclick="startAI()">
+    Start AI
+  </button>
 
-  <div id="status">Status: Ready</div>
+  <button class="mic" onclick="startMic()">
+    🎙️ Speak to AI
+  </button>
 
-  <div id="chat">
-KIKT AI: வணக்கம் சார்! KIKT Software Solutions-ல இருந்து பேசுறேன். உங்களுக்கு என்ன மாதிரி software தேவைப்படுது?
+  <button class="stop" onclick="stopAI()">
+    Stop Voice
+  </button>
+
+  <div id="status">
+    Status: Ready
   </div>
 
-  <input id="message" placeholder="Type your message here">
+  <div id="chat">KIKT AI: வணக்கம் சார்! KIKT Software Solutions-ல இருந்து பேசுறேன். உங்களுக்கு என்ன மாதிரி software தேவைப்படுது?</div>
 
-  <button class="send" onclick="sendMessage()">Send Message</button>
+  <input
+    id="message"
+    type="text"
+    placeholder="Type your message here"
+  >
+
+  <button class="send" onclick="sendMessage()">
+    Send Message
+  </button>
 
   <p class="note">
-    Demo version. Bella voice and AI response service will be connected in the next setup step.
+    Bella voice demo. Mic availability depends on your browser.
   </p>
+
 </div>
 
 <script>
@@ -116,28 +147,90 @@ const chat = document.getElementById("chat");
 const statusBox = document.getElementById("status");
 const messageBox = document.getElementById("message");
 
+let currentAudio = null;
+let currentAudioUrl = null;
+let recognition = null;
+let isStopped = false;
+
 function addMessage(name, text) {
   chat.textContent += "\n\n" + name + ": " + text;
   chat.scrollTop = chat.scrollHeight;
 }
 
-function speak(text) {
-  if (!("speechSynthesis" in window)) {
-    statusBox.textContent = "Voice playback is not supported in this browser.";
-    return;
+/* BELLA VOICE API */
+async function speak(text) {
+  stopCurrentAudio();
+  isStopped = false;
+
+  statusBox.textContent = "Bella voice generating...";
+
+  try {
+    const response = await fetch("/api/tts", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        text: text
+      })
+    });
+
+    if (!response.ok) {
+      let errorMessage = "Voice generation failed";
+
+      try {
+        const errorData = await response.json();
+        if (errorData.error) {
+          errorMessage = errorData.error;
+        }
+      } catch (e) {}
+
+      throw new Error(errorMessage);
+    }
+
+    const audioBlob = await response.blob();
+    currentAudioUrl = URL.createObjectURL(audioBlob);
+    currentAudio = new Audio(currentAudioUrl);
+
+    currentAudio.onended = () => {
+      cleanupAudio();
+      statusBox.textContent = "Bella voice finished.";
+    };
+
+    currentAudio.onerror = () => {
+      cleanupAudio();
+      statusBox.textContent = "Audio playback failed.";
+    };
+
+    await currentAudio.play();
+
+    statusBox.textContent = "Bella is speaking...";
+
+  } catch (error) {
+    console.error(error);
+    statusBox.textContent = "Bella voice error: " + error.message;
   }
-
-  window.speechSynthesis.cancel();
-
-  const utterance = new SpeechSynthesisUtterance(text);
-  utterance.lang = "ta-IN";
-  utterance.rate = 0.9;
-  utterance.pitch = 1.08;
-  utterance.volume = 1;
-
-  window.speechSynthesis.speak(utterance);
 }
 
+function cleanupAudio() {
+  if (currentAudioUrl) {
+    URL.revokeObjectURL(currentAudioUrl);
+  }
+
+  currentAudio = null;
+  currentAudioUrl = null;
+}
+
+function stopCurrentAudio() {
+  if (currentAudio) {
+    currentAudio.pause();
+    currentAudio.currentTime = 0;
+  }
+
+  cleanupAudio();
+}
+
+/* START DEMO */
 function startAI() {
   const greeting =
     "ஹலோ சார், KIKT Software Solutions-ல இருந்து பேசுறேன். " +
@@ -147,6 +240,7 @@ function startAI() {
   speak(greeting);
 }
 
+/* SAMPLE DEMO REPLIES */
 function getReply(text) {
   const t = text.toLowerCase();
 
@@ -166,58 +260,98 @@ function getReply(text) {
     return "சார், உங்க requirement-ஐப் பொறுத்து cost மாறும். தேவையான features சொன்னா estimate சொல்லலாம்.";
   }
 
+  if (t.includes("hello") || t.includes("hi")) {
+    return "ஹலோ சார்! சொல்லுங்க, உங்களுக்கு என்ன மாதிரி software தேவைப்படுது?";
+  }
+
   return "சரி சார், இன்னும் கொஞ்சம் detail-ஆ சொல்லுங்க. உங்க business requirement-க்கு ஏத்த software solution பற்றி பேசலாம்.";
 }
 
+/* SEND TYPED MESSAGE */
 function sendMessage() {
   const text = messageBox.value.trim();
-  if (!text) return;
 
-  messageBox.value = "";
-  addMessage("Customer", text);
-
-  const reply = getReply(text);
-  addMessage("KIKT AI", reply);
-  speak(reply);
-}
-
-function startMic() {
-  const SpeechRecognition =
-    window.SpeechRecognition || window.webkitSpeechRecognition;
-
-  if (!SpeechRecognition) {
-    statusBox.textContent =
-      "Mic speech recognition not supported here. Please type your message.";
+  if (!text) {
+    statusBox.textContent = "Please type a message first.";
     return;
   }
 
-  const recognition = new SpeechRecognition();
-  recognition.lang = "ta-IN";
-  recognition.continuous = false;
-  recognition.interimResults = false;
+  messageBox.value = "";
 
-  recognition.onstart = () => {
-    statusBox.textContent = "Listening... Please speak.";
-  };
+  addMessage("Customer", text);
 
-  recognition.onresult = (event) => {
-    const spokenText = event.results[0][0].transcript;
-    messageBox.value = spokenText;
-    statusBox.textContent = "Heard: " + spokenText;
-    sendMessage();
-  };
+  const reply = getReply(text);
 
-  recognition.onerror = (event) => {
-    statusBox.textContent = "Mic error: " + event.error;
-  };
+  addMessage("KIKT AI", reply);
 
-  recognition.start();
+  speak(reply);
 }
 
+/* MICROPHONE INPUT */
+function startMic() {
+  const SpeechRecognition =
+    window.SpeechRecognition ||
+    window.webkitSpeechRecognition;
+
+  if (!SpeechRecognition) {
+    statusBox.textContent =
+      "Speech recognition not supported. Please type your message.";
+    return;
+  }
+
+  try {
+    recognition = new SpeechRecognition();
+
+    recognition.lang = "ta-IN";
+    recognition.continuous = false;
+    recognition.interimResults = false;
+
+    recognition.onstart = () => {
+      statusBox.textContent = "Listening... Please speak.";
+    };
+
+    recognition.onresult = (event) => {
+      const spokenText =
+        event.results[0][0].transcript;
+
+      messageBox.value = spokenText;
+      statusBox.textContent = "Heard: " + spokenText;
+
+      sendMessage();
+    };
+
+    recognition.onerror = (event) => {
+      statusBox.textContent =
+        "Mic error: " + event.error +
+        ". You can type your message instead.";
+    };
+
+    recognition.onend = () => {
+      recognition = null;
+    };
+
+    recognition.start();
+
+  } catch (error) {
+    statusBox.textContent =
+      "Mic could not start. Please type your message.";
+  }
+}
+
+/* STOP VOICE */
 function stopAI() {
-  window.speechSynthesis.cancel();
+  isStopped = true;
+
+  if (recognition) {
+    recognition.stop();
+    recognition = null;
+  }
+
+  stopCurrentAudio();
+
   statusBox.textContent = "Voice stopped.";
 }
 </script>
+
 </body>
 </html>
