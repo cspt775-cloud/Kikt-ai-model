@@ -1,1 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KIKT AI Voice Assistant</title>
 
+<style>
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    padding: 18px;
+    font-family: Arial, sans-serif;
+    background: #eef2f7;
+    color: #172033;
+  }
+
+  .app {
+    max-width: 520px;
+    margin: 20px auto;
+    padding: 22px;
+    background: white;
+    border-radius: 18px;
+    box-shadow: 0 5px 24px #0001;
+  }
+
+  h2 {
+    text-align: center;
+    color: #1555a5;
+  }
+
+  .subtitle {
+    text-align: center;
+    color: #666;
+  }
+
+  button {
+    width: 100%;
+    border: 0;
+    border-radius: 10px;
+    padding: 15px;
+    margin-top: 10px;
+    font-size: 16px;
+    color: white;
+    cursor: pointer;
+  }
+
+  .start { background: #1769d2; }
+  .mic { background: #16834a; }
+  .send { background: #5b55b8; }
+  .stop { background: #c83232; }
+
+  #status {
+    margin-top: 15px;
+    padding: 12px;
+    border-radius: 10px;
+    background: #eef3fa;
+    font-size: 14px;
+  }
+
+  #chat {
+    margin-top: 15px;
+    padding: 15px;
+    min-height: 170px;
+    background: #f5f7fb;
+    border-radius: 12px;
+    white-space: pre-wrap;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+  }
+
+  input {
+    width: 100%;
+    margin-top: 14px;
+    padding: 14px;
+    border: 1px solid #bbb;
+    border-radius: 10px;
+    font-size: 16px;
+  }
+
+  .note {
+    font-size: 13px;
+    color: #666;
+    line-height: 1.5;
+  }
+</style>
+</head>
+
+<body>
+<div class="app">
+  <h2>KIKT AI Voice Assistant</h2>
+  <p class="subtitle">Tamil + English Customer Support Demo</p>
+
+  <button class="start" onclick="startAI()">Start AI</button>
+  <button class="mic" onclick="startMic()">🎙️ Speak to AI</button>
+  <button class="stop" onclick="stopAI()">Stop Voice</button>
+
+  <div id="status">Status: Ready</div>
+
+  <div id="chat">
+KIKT AI: வணக்கம் சார்! KIKT Software Solutions-ல இருந்து பேசுறேன். உங்களுக்கு என்ன மாதிரி software தேவைப்படுது?
+  </div>
+
+  <input id="message" placeholder="Type your message here">
+
+  <button class="send" onclick="sendMessage()">Send Message</button>
+
+  <p class="note">
+    Demo version. Bella voice and AI response service will be connected in the next setup step.
+  </p>
+</div>
+
+<script>
+const chat = document.getElementById("chat");
+const statusBox = document.getElementById("status");
+const messageBox = document.getElementById("message");
+
+function addMessage(name, text) {
+  chat.textContent += "\n\n" + name + ": " + text;
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function speak(text) {
+  if (!("speechSynthesis" in window)) {
+    statusBox.textContent = "Voice playback is not supported in this browser.";
+    return;
+  }
+
+  window.speechSynthesis.cancel();
+
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = "ta-IN";
+  utterance.rate = 0.9;
+  utterance.pitch = 1.08;
+  utterance.volume = 1;
+
+  window.speechSynthesis.speak(utterance);
+}
+
+function startAI() {
+  const greeting =
+    "ஹலோ சார், KIKT Software Solutions-ல இருந்து பேசுறேன். " +
+    "உங்களுக்கு என்ன மாதிரி software தேவைப்படுது?";
+
+  addMessage("KIKT AI", greeting);
+  speak(greeting);
+}
+
+function getReply(text) {
+  const t = text.toLowerCase();
+
+  if (t.includes("website")) {
+    return "சரி சார். Business website வேணுமா, இல்ல enquiry form உடன் website வேணுமா?";
+  }
+
+  if (t.includes("app")) {
+    return "சரி சார். Android app வேணுமா, இல்ல web application வேணுமா?";
+  }
+
+  if (t.includes("billing")) {
+    return "Billing software-ல sales, stock, invoice manage பண்ணணுமா சார்?";
+  }
+
+  if (t.includes("price") || t.includes("cost")) {
+    return "சார், உங்க requirement-ஐப் பொறுத்து cost மாறும். தேவையான features சொன்னா estimate சொல்லலாம்.";
+  }
+
+  return "சரி சார், இன்னும் கொஞ்சம் detail-ஆ சொல்லுங்க. உங்க business requirement-க்கு ஏத்த software solution பற்றி பேசலாம்.";
+}
+
+function sendMessage() {
+  const text = messageBox.value.trim();
+  if (!text) return;
+
+  messageBox.value = "";
+  addMessage("Customer", text);
+
+  const reply = getReply(text);
+  addMessage("KIKT AI", reply);
+  speak(reply);
+}
+
+function startMic() {
+  const SpeechRecognition =
+    window.SpeechRecognition || window.webkitSpeechRecognition;
+
+  if (!SpeechRecognition) {
+    statusBox.textContent =
+      "Mic speech recognition not supported here. Please type your message.";
+    return;
+  }
+
+  const recognition = new SpeechRecognition();
+  recognition.lang = "ta-IN";
+  recognition.continuous = false;
+  recognition.interimResults = false;
+
+  recognition.onstart = () => {
+    statusBox.textContent = "Listening... Please speak.";
+  };
+
+  recognition.onresult = (event) => {
+    const spokenText = event.results[0][0].transcript;
+    messageBox.value = spokenText;
+    statusBox.textContent = "Heard: " + spokenText;
+    sendMessage();
+  };
+
+  recognition.onerror = (event) => {
+    statusBox.textContent = "Mic error: " + event.error;
+  };
+
+  recognition.start();
+}
+
+function stopAI() {
+  window.speechSynthesis.cancel();
+  statusBox.textContent = "Voice stopped.";
+}
+</script>
+</body>
+</html>
