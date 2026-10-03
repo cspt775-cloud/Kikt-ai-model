@@ -1,3413 +1,745 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
 <meta charset="UTF-8">
-
-<meta name="viewport"
-      content="width=device-width, initial-scale=1.0">
-
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>KIKT Software Solutions - AI Assistant</title>
-
-
 <style>
-
-/* =====================================================
-   BASIC
-===================================================== */
-
-*{
-    box-sizing:border-box;
-}
-
-body{
-    margin:0;
-    font-family:Arial,Helvetica,sans-serif;
-    background:#f4f7fb;
-    color:#172033;
-}
-
-
-/* =====================================================
-   HEADER
-===================================================== */
-
-.header{
-
-    background:#111827;
-
-    color:white;
-
-    padding:16px 24px;
-
-    display:flex;
-
-    align-items:center;
-
-    gap:12px;
-
-}
-
-.logo{
-
-    font-size:21px;
-
-    font-weight:700;
-
-}
-
-.subtitle{
-
-    color:#c7ccd6;
-
-    font-size:14px;
-
-}
-
-
-/* =====================================================
-   CONTAINER
-===================================================== */
-
-.container{
-
-    max-width:1050px;
-
-    margin:28px auto;
-
-    padding:0 15px;
-
-}
-
-
-/* =====================================================
-   CHAT BOX
-===================================================== */
-
-.chatBox{
-
-    background:white;
-
-    border-radius:16px;
-
-    min-height:720px;
-
-    box-shadow:
-        0 8px 30px rgba(0,0,0,.08);
-
-    display:flex;
-
-    flex-direction:column;
-
-    overflow:hidden;
-
-}
-
-
-/* =====================================================
-   CONTROL BAR
-===================================================== */
-
-.controlBar{
-
-    padding:14px 18px;
-
-    border-bottom:1px solid #e5e7eb;
-
-    display:flex;
-
-    align-items:center;
-
-    gap:9px;
-
-    background:#fafbfc;
-
-    flex-wrap:wrap;
-
-}
-
-.controlBtn{
-
-    border:none;
-
-    padding:10px 15px;
-
-    border-radius:8px;
-
-    cursor:pointer;
-
-    font-size:14px;
-
-    font-weight:600;
-
-}
-
-.startBtn{
-
-    background:#111827;
-
-    color:white;
-
-}
-
-.stopBtn{
-
-    background:#e5e7eb;
-
-    color:#111827;
-
-}
-
-.speakBtn{
-
-    background:#eef2ff;
-
-    color:#3730a3;
-
-}
-
-.speakBtn.active{
-
-    background:#111827;
-
-    color:white;
-
-}
-
-.micBtn{
-
-    background:#ecfdf5;
-
-    color:#047857;
-
-}
-
-.micBtn.active{
-
-    background:#047857;
-
-    color:white;
-
-}
-
-.status{
-
-    margin-left:auto;
-
-    font-size:13px;
-
-    color:#6b7280;
-
-}
-
-
-/* =====================================================
-   CHAT
-===================================================== */
-
-.messages{
-
-    flex:1;
-
-    padding:22px;
-
-    overflow-y:auto;
-
-    min-height:530px;
-
-}
-
-.msg{
-
-    display:flex;
-
-    margin:13px 0;
-
-}
-
-.msg.ai{
-
-    justify-content:flex-start;
-
-}
-
-.msg.user{
-
-    justify-content:flex-end;
-
-}
-
-.bubble{
-
-    max-width:78%;
-
-    padding:13px 16px;
-
-    border-radius:15px;
-
-    font-size:15px;
-
-    line-height:1.55;
-
-    white-space:pre-wrap;
-
-}
-
-.ai .bubble{
-
-    background:#eef2ff;
-
-    color:#172033;
-
-    border-bottom-left-radius:5px;
-
-}
-
-.user .bubble{
-
-    background:#111827;
-
-    color:white;
-
-    border-bottom-right-radius:5px;
-
-}
-
-
-/* =====================================================
-   INPUT
-===================================================== */
-
-.bottomArea{
-
-    padding:15px 18px 18px;
-
-    border-top:1px solid #e5e7eb;
-
-}
-
-.inputArea{
-
-    display:flex;
-
-    gap:10px;
-
-}
-
-.inputArea input{
-
-    flex:1;
-
-    border:1px solid #d1d5db;
-
-    border-radius:10px;
-
-    padding:14px;
-
-    font-size:15px;
-
-    outline:none;
-
-}
-
-.inputArea input:focus{
-
-    border-color:#6b7280;
-
-}
-
-.sendBtn{
-
-    border:none;
-
-    background:#111827;
-
-    color:white;
-
-    padding:0 23px;
-
-    border-radius:10px;
-
-    font-size:15px;
-
-    cursor:pointer;
-
-}
-
-.sendBtn:disabled{
-
-    opacity:.5;
-
-}
-
-.typing{
-
-    font-size:12px;
-
-    color:#9ca3af;
-
-    min-height:18px;
-
-    margin-top:7px;
-
-}
-
-
-/* =====================================================
-   MOBILE
-===================================================== */
-
-@media(max-width:700px){
-
-    .header{
-
-        flex-direction:column;
-
-        align-items:flex-start;
-
-    }
-
-    .status{
-
-        width:100%;
-
-        margin-left:0;
-
-    }
-
-    .bubble{
-
-        max-width:90%;
-
-    }
-
-}
-
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f4f7fb;color:#172033}
+.header{background:#111827;color:#fff;padding:16px 24px;display:flex;align-items:center;gap:12px}
+.logo{font-size:21px;font-weight:700}.subtitle{color:#c7ccd6;font-size:14px}
+.container{max-width:1050px;margin:28px auto;padding:0 15px}
+.chatBox{background:#fff;border-radius:16px;min-height:720px;box-shadow:0 8px 30px rgba(0,0,0,.08);display:flex;flex-direction:column;overflow:hidden}
+.controlBar{padding:14px 18px;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;gap:9px;background:#fafbfc;flex-wrap:wrap}
+.controlBtn{border:0;padding:10px 15px;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600}
+.startBtn{background:#111827;color:#fff}.stopBtn{background:#e5e7eb;color:#111827}
+.speakBtn{background:#eef2ff;color:#3730a3}.speakBtn.active{background:#111827;color:#fff}
+.micBtn{background:#ecfdf5;color:#047857}.micBtn.active{background:#047857;color:#fff}
+.status{margin-left:auto;font-size:13px;color:#6b7280}
+.messages{flex:1;padding:22px;overflow-y:auto;min-height:530px}
+.msg{display:flex;margin:13px 0}.msg.ai{justify-content:flex-start}.msg.user{justify-content:flex-end}
+.bubble{max-width:78%;padding:13px 16px;border-radius:15px;font-size:15px;line-height:1.55;white-space:pre-wrap}
+.ai .bubble{background:#eef2ff;color:#172033;border-bottom-left-radius:5px}
+.user .bubble{background:#111827;color:#fff;border-bottom-right-radius:5px}
+.bottomArea{padding:15px 18px 18px;border-top:1px solid #e5e7eb}
+.inputArea{display:flex;gap:10px}.inputArea input{flex:1;border:1px solid #d1d5db;border-radius:10px;padding:14px;font-size:15px;outline:0}
+.inputArea input:focus{border-color:#6b7280}.sendBtn{border:0;background:#111827;color:#fff;padding:0 23px;border-radius:10px;font-size:15px;cursor:pointer}
+.sendBtn:disabled{opacity:.5}.typing{font-size:12px;color:#9ca3af;min-height:18px;margin-top:7px}
+@media(max-width:700px){.header{flex-direction:column;align-items:flex-start}.status{width:100%;margin-left:0}.bubble{max-width:90%}}
 </style>
-
 </head>
-
-
 <body>
+<div class="header"><div class="logo">KIKT Software Solutions</div><div class="subtitle">AI Sales &amp; Support Assistant</div></div>
 
-
-<!-- =====================================================
-     HEADER
-===================================================== -->
-
-<div class="header">
-
-    <div class="logo">
-        KIKT Software Solutions
-    </div>
-
-    <div class="subtitle">
-        AI Sales & Support Assistant
-    </div>
-
-</div>
-
-
-<div class="container">
-
-<div class="chatBox">
-
-
-<!-- =====================================================
-     CONTROL BAR
-===================================================== -->
-
+<div class="container"><div class="chatBox">
 <div class="controlBar">
-
-    <button
-        id="startBtn"
-        class="controlBtn startBtn">
-
-        ▶ Start AI
-
-    </button>
-
-
-    <button
-        id="stopBtn"
-        class="controlBtn stopBtn">
-
-        ■ Stop AI
-
-    </button>
-
-
-    <button
-        id="speakBtn"
-        class="controlBtn speakBtn active">
-
-        🔊 Speak AI: ON
-
-    </button>
-
-
-    <button
-        id="micBtn"
-        class="controlBtn micBtn">
-
-        🎙 Microphone OFF
-
-    </button>
-
-
-    <div
-        id="status"
-        class="status">
-
-        AI Ready
-
-    </div>
-
+<button id="startBtn" class="controlBtn startBtn">▶ Start AI</button>
+<button id="stopBtn" class="controlBtn stopBtn">■ Stop AI</button>
+<button id="speakBtn" class="controlBtn speakBtn active">🔊 Speak AI: ON</button>
+<button id="micBtn" class="controlBtn micBtn">🎙 Microphone OFF</button>
+<div id="status" class="status">AI Ready</div>
 </div>
 
-
-<!-- =====================================================
-     MESSAGES
-===================================================== -->
-
-<div
-    id="messages"
-    class="messages">
-</div>
-
-
-<!-- =====================================================
-     INPUT
-===================================================== -->
+<div id="messages" class="messages"></div>
 
 <div class="bottomArea">
-
-    <div class="inputArea">
-
-        <input
-            id="userInput"
-            type="text"
-            placeholder="Type or speak your requirement..."
-            autocomplete="off"
-        >
-
-        <button
-            id="sendBtn"
-            class="sendBtn">
-
-            Send
-
-        </button>
-
-    </div>
-
-
-    <div
-        id="typing"
-        class="typing">
-    </div>
-
+<div class="inputArea">
+<input id="userInput" type="text" placeholder="Type or speak your requirement..." autocomplete="off">
+<button id="sendBtn" class="sendBtn">Send</button>
 </div>
-
-
+<div id="typing" class="typing"></div>
 </div>
-
-</div>
-
-
+</div></div>
 
 <script>
-
 /* =========================================================
-   KIKT MASTER CONVERSATION ENGINE
-   =========================================================
-
-   NO OPENAI API
-
-   Features:
-
-   ✓ Dynamic industry
-   ✓ Dynamic requirements
-   ✓ Context memory
-   ✓ Question memory
-   ✓ Voice input
-   ✓ ElevenLabs TTS
-   ✓ Random conversation order
-   ✓ Industry switching
-   ✓ Tamil / Tanglish / English variants
-   ✓ No repeated questions
-   ✓ Phone lead closing
-
+   KIKT MASTER ENGINE
+   - No OpenAI API
+   - ElevenLabs remains /api/tts
+   - Context aware
+   - Voice correction
+   - Any order of answers
+   - No repeated completed questions
 ========================================================= */
 
-
-/* =========================================================
-   STATE
-========================================================= */
-
-const state = {
-
-    started:false,
-
-    industry:"",
-
-    requirements:[],
-
-    problems:[],
-
-    users:"",
-
-    platform:"",
-
-    currentSystem:"",
-
-    companyName:"",
-
-    contact:"",
-
-    email:"",
-
-    priceAsked:false,
-
-    leadClosed:false,
-
-    speakEnabled:true,
-
-    microphoneEnabled:false,
-
-    lastQuestionType:"",
-
-    conversationStarted:false
-
+const state={
+  started:false,
+  industry:"",
+  requirements:[],
+  problems:[],
+  users:"",
+  platform:"",
+  currentSystem:"",
+  contact:"",
+  email:"",
+  speakEnabled:true,
+  microphoneEnabled:false,
+  lastQuestionType:"",
+  leadClosed:false,
+  awaitingIndustry:false
 };
 
-
-/* =========================================================
-   DOM
-========================================================= */
-
-const messagesEl =
-    document.getElementById("messages");
-
-const inputEl =
-    document.getElementById("userInput");
-
-const sendBtn =
-    document.getElementById("sendBtn");
-
-const startBtn =
-    document.getElementById("startBtn");
-
-const stopBtn =
-    document.getElementById("stopBtn");
-
-const speakBtn =
-    document.getElementById("speakBtn");
-
-const micBtn =
-    document.getElementById("micBtn");
-
-const statusEl =
-    document.getElementById("status");
-
-const typingEl =
-    document.getElementById("typing");
-
-
-/* =========================================================
-   AUDIO
-========================================================= */
-
-let currentAudio = null;
-
-
-/* =========================================================
-   SPEECH RECOGNITION
-========================================================= */
-
-let recognition = null;
-
-let speechSupported = false;
-
-let speechFinalText = "";
-
-let speechRestart = false;
-
-
-/* =========================================================
-   CREATE SPEECH RECOGNITION
-========================================================= */
-
-if(
-    "SpeechRecognition" in window ||
-    "webkitSpeechRecognition" in window
-){
-
-    const SpeechRecognition =
-        window.SpeechRecognition ||
-        window.webkitSpeechRecognition;
-
-    recognition =
-        new SpeechRecognition();
-
-    speechSupported = true;
-
-    recognition.continuous = true;
-
-    recognition.interimResults = true;
-
-    /*
-       en-IN works better for
-       Tanglish + English business words.
-
-       User can still speak Tamil;
-       our parser handles many Tamil/Tanglish
-       words after transcription.
-    */
-
-    recognition.lang = "en-IN";
-
-
-    recognition.onstart = function(){
-
-        statusEl.textContent =
-            "🎙 Listening...";
-
-        micBtn.textContent =
-            "🎙 Microphone ON";
-
-        micBtn.classList.add("active");
-
-    };
-
-
-    recognition.onresult = function(event){
-
-        let finalText = "";
-
-        let interimText = "";
-
-
-        for(
-            let i = event.resultIndex;
-            i < event.results.length;
-            i++
-        ){
-
-            const transcript =
-                event.results[i][0].transcript;
-
-            if(event.results[i].isFinal){
-
-                finalText +=
-                    transcript + " ";
-
-            }
-            else{
-
-                interimText +=
-                    transcript;
-
-            }
-
-        }
-
-
-        /*
-           Show live transcript
-        */
-
-        if(interimText){
-
-            inputEl.value =
-                interimText;
-
-            typingEl.textContent =
-                "Listening: " +
-                interimText;
-
-        }
-
-
-        /*
-           Final speech
-        */
-
-        if(finalText.trim()){
-
-            speechFinalText =
-                finalText.trim();
-
-            inputEl.value =
-                speechFinalText;
-
-            typingEl.textContent =
-                "Voice captured";
-
-
-            /*
-               Automatically send
-            */
-
-            setTimeout(
-                function(){
-
-                    if(
-                        speechFinalText.trim()
-                    ){
-
-                        const text =
-                            speechFinalText.trim();
-
-                        speechFinalText = "";
-
-                        sendText(text);
-
-                    }
-
-                },
-                350
-            );
-
-        }
-
-    };
-
-
-    recognition.onerror = function(event){
-
-        console.log(
-            "Speech error:",
-            event.error
-        );
-
-
-        if(event.error === "not-allowed"){
-
-            state.microphoneEnabled =
-                false;
-
-            micBtn.textContent =
-                "🎙 Microphone OFF";
-
-            micBtn.classList.remove(
-                "active"
-            );
-
-            statusEl.textContent =
-                "Microphone permission denied";
-
-        }
-
-    };
-
-
-    recognition.onend = function(){
-
-        /*
-           If user didn't switch mic OFF,
-           restart listening.
-        */
-
-        if(
-            state.microphoneEnabled &&
-            state.started
-        ){
-
-            try{
-
-                recognition.start();
-
-            }
-            catch(e){}
-
-        }
-        else{
-
-            micBtn.textContent =
-                "🎙 Microphone OFF";
-
-            micBtn.classList.remove(
-                "active"
-            );
-
-        }
-
-    };
-
+const messagesEl=document.getElementById("messages");
+const inputEl=document.getElementById("userInput");
+const sendBtn=document.getElementById("sendBtn");
+const startBtn=document.getElementById("startBtn");
+const stopBtn=document.getElementById("stopBtn");
+const speakBtn=document.getElementById("speakBtn");
+const micBtn=document.getElementById("micBtn");
+const statusEl=document.getElementById("status");
+const typingEl=document.getElementById("typing");
+
+let currentAudio=null;
+let recognition=null;
+let speechSupported=false;
+
+function normalize(s){
+  return String(s||"")
+    .toLowerCase()
+    .replace(/[.,!?;:()[\]{}]/g," ")
+    .replace(/\s+/g," ")
+    .trim();
 }
 
-
-/* =========================================================
-   NORMALIZE
-========================================================= */
-
-function normalize(text){
-
-    return text
-
-        .toLowerCase()
-
-        .replace(/[.,!?;:()[\]{}]/g," ")
-
-        .replace(/\s+/g," ")
-
-        .trim();
-
+function addUnique(arr,v){
+  if(v && !arr.includes(v)) arr.push(v);
 }
 
-
-/* =========================================================
-   MESSAGE
-========================================================= */
+function has(t,arr){return arr.some(x=>t.includes(x));}
 
 function addMessage(text,type){
-
-    const row =
-        document.createElement("div");
-
-    row.className =
-        "msg " + type;
-
-
-    const bubble =
-        document.createElement("div");
-
-    bubble.className =
-        "bubble";
-
-
-    bubble.textContent =
-        text;
-
-
-    row.appendChild(
-        bubble
-    );
-
-
-    messagesEl.appendChild(
-        row
-    );
-
-
-    messagesEl.scrollTop =
-        messagesEl.scrollHeight;
-
+  const row=document.createElement("div");
+  row.className="msg "+type;
+  const b=document.createElement("div");
+  b.className="bubble";
+  b.textContent=text;
+  row.appendChild(b);
+  messagesEl.appendChild(row);
+  messagesEl.scrollTop=messagesEl.scrollHeight;
 }
 
+function userSay(t){addMessage(t,"user");}
 
-/* =========================================================
-   USER
-========================================================= */
-
-function userSay(text){
-
-    addMessage(
-        text,
-        "user"
-    );
-
+function aiSay(t){
+  addMessage(t,"ai");
+  if(state.speakEnabled && state.started) speak(t);
 }
-
-
-/* =========================================================
-   AI
-========================================================= */
-
-function aiSay(text){
-
-    addMessage(
-        text,
-        "ai"
-    );
-
-
-    if(
-        state.speakEnabled &&
-        state.started
-    ){
-
-        speak(text);
-
-    }
-
-}
-
-
-/* =========================================================
-   ELEVENLABS
-========================================================= */
-
-async function speak(text){
-
-    try{
-
-        stopAudio();
-
-        statusEl.textContent =
-            "🔊 AI Speaking...";
-
-
-        const response =
-            await fetch(
-                "/api/tts",
-                {
-
-                    method:"POST",
-
-                    headers:{
-                        "Content-Type":
-                            "application/json"
-                    },
-
-                    body:JSON.stringify({
-                        text:text
-                    })
-
-                }
-            );
-
-
-        if(!response.ok){
-
-            statusEl.textContent =
-                "AI Ready";
-
-            return;
-
-        }
-
-
-        const blob =
-            await response.blob();
-
-
-        const url =
-            URL.createObjectURL(
-                blob
-            );
-
-
-        currentAudio =
-            new Audio(url);
-
-
-        currentAudio.onended =
-            function(){
-
-                URL.revokeObjectURL(
-                    url
-                );
-
-                currentAudio =
-                    null;
-
-                statusEl.textContent =
-                    "AI Ready";
-
-            };
-
-
-        await currentAudio.play();
-
-    }
-    catch(error){
-
-        console.error(error);
-
-        statusEl.textContent =
-            "AI Ready";
-
-    }
-
-}
-
-
-/* =========================================================
-   STOP AUDIO
-========================================================= */
 
 function stopAudio(){
-
-    if(currentAudio){
-
-        currentAudio.pause();
-
-        currentAudio.currentTime = 0;
-
-        currentAudio = null;
-
-    }
-
+  if(currentAudio){
+    currentAudio.pause();
+    currentAudio.currentTime=0;
+    currentAudio=null;
+  }
 }
 
-
-/* =========================================================
-   HAS
-========================================================= */
-
-function has(text,words){
-
-    return words.some(
-        word => text.includes(word)
-    );
-
+async function speak(text){
+  try{
+    stopAudio();
+    statusEl.textContent="🔊 AI Speaking...";
+    const r=await fetch("/api/tts",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({text})
+    });
+    if(!r.ok){statusEl.textContent="AI Ready";return;}
+    const blob=await r.blob();
+    const url=URL.createObjectURL(blob);
+    currentAudio=new Audio(url);
+    currentAudio.onended=()=>{
+      URL.revokeObjectURL(url);
+      currentAudio=null;
+      statusEl.textContent="AI Ready";
+    };
+    await currentAudio.play();
+  }catch(e){
+    console.error(e);
+    statusEl.textContent="AI Ready";
+  }
 }
 
-
-/* =========================================================
-   UNIQUE
-========================================================= */
-
-function addUnique(array,value){
-
-    if(
-        value &&
-        !array.includes(value)
-    ){
-
-        array.push(value);
-
-    }
-
-}
-
-
-/* =========================================================
-   INDUSTRY DETECTION
-========================================================= */
-
-function detectIndustry(text){
-
-    const rules = [
-
-        {
-            name:"Construction",
-
-            words:[
-                "construction",
-                "construction field",
-                "builder",
-                "building",
-                "civil",
-                "contractor",
-                "sub contractor",
-                "subcontractor",
-                "mason",
-                "labour",
-                "labor",
-                "worker",
-                "site work"
-            ]
-
-        },
-
-
-        {
-            name:"Textile",
-
-            words:[
-                "textile",
-                "spinning",
-                "spinning mill",
-                "cotton mill",
-                "cotton",
-                "yarn",
-                "loom",
-                "weaving",
-                "knitting",
-                "garment",
-                "fabric",
-                "dyeing",
-                "processing"
-            ]
-
-        },
-
-
-        {
-            name:"Manufacturing",
-
-            words:[
-                "manufacturing",
-                "manufacturer",
-                "factory",
-                "production",
-                "assembly",
-                "industrial"
-            ]
-
-        },
-
-
-        {
-            name:"Retail",
-
-            words:[
-                "retail",
-                "shop",
-                "store",
-                "supermarket",
-                "mart",
-                "retail shop"
-            ]
-
-        },
-
-
-        {
-            name:"Wholesale",
-
-            words:[
-                "wholesale",
-                "wholesaler",
-                "distributor",
-                "distribution",
-                "dealer"
-            ]
-
-        },
-
-
-        {
-            name:"Restaurant",
-
-            words:[
-                "restaurant",
-                "hotel",
-                "cafe",
-                "coffee shop",
-                "food business",
-                "food shop",
-                "kitchen"
-            ]
-
-        },
-
-
-        {
-            name:"Education",
-
-            words:[
-                "school",
-                "college",
-                "education",
-                "student",
-                "tuition",
-                "institute",
-                "academy",
-                "training center"
-            ]
-
-        },
-
-
-        {
-            name:"Healthcare",
-
-            words:[
-                "hospital",
-                "hospital software",
-                "clinic",
-                "doctor",
-                "patient",
-                "medical",
-                "pharmacy",
-                "healthcare",
-                "health care"
-            ]
-
-        },
-
-
-        {
-            name:"Salon",
-
-            words:[
-                "salon",
-                "saloon",
-                "beauty parlour",
-                "beauty parlor",
-                "barber",
-                "spa",
-                "hair salon"
-            ]
-
-        },
-
-
-        {
-            name:"Real Estate",
-
-            words:[
-                "real estate",
-                "property",
-                "plot",
-                "plots",
-                "land",
-                "flat",
-                "apartment",
-                "villa"
-            ]
-
-        },
-
-
-        {
-            name:"Logistics",
-
-            words:[
-                "logistics",
-                "transport",
-                "transportation",
-                "vehicle",
-                "truck",
-                "lorry",
-                "fleet",
-                "delivery",
-                "driver"
-            ]
-
-        },
-
-
-        {
-            name:"Service",
-
-            words:[
-                "service center",
-                "service centre",
-                "repair",
-                "maintenance",
-                "service business"
-            ]
-
-        }
-
-    ];
-
-
-    for(
-        const rule of rules
-    ){
-
-        if(
-            has(
-                text,
-                rule.words
-            )
-        ){
-
-            /*
-               If industry changes,
-               reset old industry-specific
-               requirements.
-
-               Example:
-               Salon -> Hospital
-            */
-
-            if(
-                state.industry &&
-                state.industry !== rule.name
-            ){
-
-                state.requirements = [];
-
-                state.problems = [];
-
-            }
-
-
-            state.industry =
-                rule.name;
-
-            return true;
-
-        }
-
-    }
-
-
-    return false;
-
-}
-
-
-/* =========================================================
-   REQUIREMENTS
-========================================================= */
-
-const requirementRules = [
-
-    {
-        label:"Labour Management",
-
-        words:[
-            "labour management",
-            "labor management",
-            "labour",
-            "labor",
-            "worker management",
-            "workers",
-            "worker",
-            "daily wages",
-            "wage management"
-        ]
-
-    },
-
-
-    {
-        label:"Attendance Management",
-
-        words:[
-            "attendance",
-            "attendance management",
-            "present absent",
-            "absent",
-            "presence"
-        ]
-
-    },
-
-
-    {
-        label:"Customer Management",
-
-        words:[
-            "customer management",
-            "customer details",
-            "customer tracking",
-            "customer follow up",
-            "customer follow-up",
-            "customer followup"
-        ]
-
-    },
-
-
-    {
-        label:"Daily Expense Tracking",
-
-        words:[
-            "daily expense",
-            "daily expenses",
-            "expense management",
-            "expense tracking",
-            "expenses",
-            "expense",
-            "daily expence",
-            "expence"
-        ]
-
-    },
-
-
-    {
-        label:"Site Management",
-
-        words:[
-            "site management",
-            "site tracking",
-            "site details",
-            "multiple sites",
-            "site wise"
-        ]
-
-    },
-
-
-    {
-        label:"Project Management",
-
-        words:[
-            "project management",
-            "project tracking",
-            "project details",
-            "project"
-        ]
-
-    },
-
-
-    {
-        label:"Material Management",
-
-        words:[
-            "material management",
-            "material tracking",
-            "material stock",
-            "materials",
-            "material"
-        ]
-
-    },
-
-
-    {
-        label:"Inventory Management",
-
-        words:[
-            "inventory",
-            "inventory management",
-            "stock management",
-            "stock tracking",
-            "stock"
-        ]
-
-    },
-
-
-    {
-        label:"Purchase Management",
-
-        words:[
-            "purchase management",
-            "purchase",
-            "purchases"
-        ]
-
-    },
-
-
-    {
-        label:"Sales Management",
-
-        words:[
-            "sales management",
-            "sales tracking",
-            "sales"
-        ]
-
-    },
-
-
-    {
-        label:"Billing & Invoicing",
-
-        words:[
-            "billing",
-            "bill",
-            "invoice",
-            "invoicing",
-            "quotation",
-            "estimate"
-        ]
-
-    },
-
-
-    {
-        label:"Payment Tracking",
-
-        words:[
-            "payment tracking",
-            "payments",
-            "payment",
-            "collection",
-            "collections"
-        ]
-
-    },
-
-
-    {
-        label:"Accounting",
-
-        words:[
-            "accounting",
-            "accounts",
-            "ledger",
-            "profit",
-            "loss"
-        ]
-
-    },
-
-
-    {
-        label:"Payroll",
-
-        words:[
-            "payroll",
-            "salary management",
-            "salary",
-            "salaries"
-        ]
-
-    },
-
-
-    {
-        label:"CRM / Lead Management",
-
-        words:[
-            "crm",
-            "lead management",
-            "lead tracking",
-            "leads",
-            "follow up",
-            "follow-up",
-            "followup",
-            "enquiry",
-            "enquiries"
-        ]
-
-    },
-
-
-    {
-        label:"HR Management",
-
-        words:[
-            "hr management",
-            "human resource",
-            "employee management",
-            "staff management",
-            "employees"
-        ]
-
-    },
-
-
-    {
-        label:"Production Management",
-
-        words:[
-            "production management",
-            "production tracking",
-            "production"
-        ]
-
-    },
-
-
-    {
-        label:"Quality Management",
-
-        words:[
-            "quality management",
-            "quality checking",
-            "quality control",
-            "inspection"
-        ]
-
-    },
-
-
-    {
-        label:"Machine Management",
-
-        words:[
-            "machine management",
-            "machine tracking",
-            "machine maintenance"
-        ]
-
-    },
-
-
-    {
-        label:"Order Management",
-
-        words:[
-            "order management",
-            "order tracking",
-            "orders",
-            "customer orders"
-        ]
-
-    },
-
-
-    {
-        label:"Barcode Management",
-
-        words:[
-            "barcode",
-            "barcode system",
-            "barcode billing"
-        ]
-
-    },
-
-
-    {
-        label:"Student Management",
-
-        words:[
-            "student management",
-            "student details"
-        ]
-
-    },
-
-
-    {
-        label:"Fees Management",
-
-        words:[
-            "fees management",
-            "fee management",
-            "fee collection",
-            "fees"
-        ]
-
-    },
-
-
-    {
-        label:"Exam Management",
-
-        words:[
-            "exam management",
-            "examination",
-            "marks",
-            "result"
-        ]
-
-    },
-
-
-    {
-        label:"Patient Management",
-
-        words:[
-            "patient management",
-            "patient details",
-            "patient records"
-        ]
-
-    },
-
-
-    {
-        label:"Appointment Management",
-
-        words:[
-            "appointment management",
-            "appointments",
-            "appointment",
-            "booking",
-            "bookings"
-        ]
-
-    },
-
-
-    {
-        label:"Pharmacy Management",
-
-        words:[
-            "pharmacy management",
-            "pharmacy",
-            "medicine stock",
-            "medicine"
-        ]
-
-    },
-
-
-    {
-        label:"Property Management",
-
-        words:[
-            "property management",
-            "plot management",
-            "property"
-        ]
-
-    },
-
-
-    {
-        label:"Site Visit Management",
-
-        words:[
-            "site visit",
-            "site visits",
-            "visit tracking"
-        ]
-
-    },
-
-
-    {
-        label:"Vehicle Management",
-
-        words:[
-            "vehicle management",
-            "vehicle tracking",
-            "fleet management",
-            "fleet"
-        ]
-
-    },
-
-
-    {
-        label:"Driver Management",
-
-        words:[
-            "driver management",
-            "driver",
-            "drivers"
-        ]
-
-    },
-
-
-    {
-        label:"Trip Management",
-
-        words:[
-            "trip management",
-            "trip tracking",
-            "trips"
-        ]
-
-    },
-
-
-    {
-        label:"Fuel Management",
-
-        words:[
-            "fuel management",
-            "fuel tracking",
-            "diesel tracking",
-            "petrol tracking"
-        ]
-
-    },
-
-
-    {
-        label:"Restaurant POS",
-
-        words:[
-            "pos",
-            "restaurant billing",
-            "table management",
-            "kitchen management"
-        ]
-
-    }
-
+/* ---------------- INDUSTRIES ---------------- */
+
+const industries=[
+  ["Construction",["construction","builder","building","civil","contractor","sub contractor","subcontractor","mason","site work","construction field"]],
+  ["Textile",["textile","spinning","spinning mill","cotton mill","cotton","yarn","loom","weaving","knitting","garment","fabric","dyeing","processing"]],
+  ["Manufacturing",["manufacturing","manufacturer","factory","production","assembly","industrial"]],
+  ["Retail",["retail","shop","store","supermarket","mart","retail shop"]],
+  ["Wholesale",["wholesale","wholesaler","distributor","distribution","dealer"]],
+  ["Restaurant",["restaurant","hotel","cafe","coffee shop","food business","food shop","kitchen"]],
+  ["Education",["school","college","education","student","tuition","institute","academy","training center"]],
+  ["Healthcare",["hospital","hospital software","clinic","doctor","patient","medical","pharmacy","healthcare","health care","hospital management"]],
+  ["Salon",["salon","saloon","beauty parlour","beauty parlor","barber","spa","hair salon"]],
+  ["Real Estate",["real estate","property","plot","plots","land","flat","apartment","villa"]],
+  ["Logistics",["logistics","transport","transportation","vehicle","truck","lorry","fleet","delivery","driver"]],
+  ["Service",["service center","service centre","repair","maintenance","service business"]]
 ];
 
-
-/* =========================================================
-   DETECT REQUIREMENTS
-========================================================= */
-
-function detectRequirements(text){
-
-    for(
-        const rule of requirementRules
-    ){
-
-        if(
-            has(
-                text,
-                rule.words
-            )
-        ){
-
-            addUnique(
-                state.requirements,
-                rule.label
-            );
-
-        }
-
+function detectIndustry(t){
+  for(const [name,words] of industries){
+    if(has(t,words)){
+      if(state.industry && state.industry!==name){
+        state.requirements=[];
+        state.problems=[];
+        state.users="";
+        state.platform="";
+        state.currentSystem="";
+      }
+      state.industry=name;
+      return true;
     }
-
+  }
+  return false;
 }
 
+/* ---------------- REQUIREMENTS ---------------- */
 
-/* =========================================================
-   PROBLEMS
-========================================================= */
+const reqRules=[
+ ["Labour Management",["labour management","labor management","labour","labor","worker management","workers","worker","daily wages","wage management"]],
+ ["Attendance Management",["attendance","attendance management","present absent","absent","presence"]],
+ ["Customer Management",["customer management","customer details","customer tracking","customer follow up","customer follow-up","customer followup"]],
+ ["Daily Expense Tracking",["daily expense","daily expenses","expense management","expense tracking","expenses","expense","daily expence","expence"]],
+ ["Site Management",["site management","site tracking","site details","multiple sites","site wise"]],
+ ["Project Management",["project management","project tracking","project details","project"]],
+ ["Material Management",["material management","material tracking","material stock","materials","material"]],
+ ["Inventory Management",["inventory","inventory management","stock management","stock tracking","stock"]],
+ ["Purchase Management",["purchase management","purchase","purchases"]],
+ ["Sales Management",["sales management","sales tracking","sales"]],
+ ["Billing & Invoicing",["billing","bill","invoice","invoicing","quotation","estimate"]],
+ ["Payment Tracking",["payment tracking","payments","payment","collection","collections"]],
+ ["Accounting",["accounting","accounts","ledger","profit","loss"]],
+ ["Payroll",["payroll","salary management","salary","salaries"]],
+ ["CRM / Lead Management",["crm","lead management","lead tracking","leads","follow up","follow-up","followup","enquiry","enquiries"]],
+ ["HR Management",["hr management","human resource","employee management","staff management","employees"]],
+ ["Production Management",["production management","production tracking","production"]],
+ ["Quality Management",["quality management","quality checking","quality control","inspection"]],
+ ["Machine Management",["machine management","machine tracking","machine maintenance"]],
+ ["Order Management",["order management","order tracking","orders","customer orders"]],
+ ["Barcode Management",["barcode","barcode system","barcode billing"]],
+ ["Student Management",["student management","student details"]],
+ ["Fees Management",["fees management","fee management","fee collection","fees"]],
+ ["Exam Management",["exam management","examination","marks","result"]],
+ ["Patient Management",["patient management","patient details","patient records"]],
+ ["Appointment Management",["appointment management","appointments","appointment","booking","bookings"]],
+ ["Pharmacy Management",["pharmacy management","pharmacy","medicine stock","medicine"]],
+ ["Property Management",["property management","plot management","property"]],
+ ["Site Visit Management",["site visit","site visits","visit tracking"]],
+ ["Vehicle Management",["vehicle management","vehicle tracking","fleet management","fleet"]],
+ ["Driver Management",["driver management","driver","drivers"]],
+ ["Trip Management",["trip management","trip tracking","trips"]],
+ ["Fuel Management",["fuel management","fuel tracking","diesel tracking","petrol tracking"]],
+ ["Restaurant POS",["pos","restaurant billing","table management","kitchen management"]]
+];
 
-function detectProblems(text){
-
-    if(
-        has(
-            text,
-            [
-                "manual",
-                "paper",
-                "excel",
-                "excel sheet",
-                "not using software"
-            ]
-        )
-    ){
-
-        addUnique(
-            state.problems,
-            "Manual / Excel based process"
-        );
-
-    }
-
-
-    if(
-        has(
-            text,
-            [
-                "wastage",
-                "waste",
-                "material wastage",
-                "consumption problem"
-            ]
-        )
-    ){
-
-        addUnique(
-            state.problems,
-            "Material wastage / consumption tracking"
-        );
-
-    }
-
-
-    if(
-        has(
-            text,
-            [
-                "missing",
-                "stock missing",
-                "material missing"
-            ]
-        )
-    ){
-
-        addUnique(
-            state.problems,
-            "Material / stock missing"
-        );
-
-    }
-
+function detectRequirements(t){
+  for(const [label,words] of reqRules){
+    if(has(t,words)) addUnique(state.requirements,label);
+  }
 }
 
+/* ---------------- PROBLEMS ---------------- */
 
-/* =========================================================
-   USERS
-========================================================= */
-
-function detectUsers(text){
-
-    /*
-       10 users
-       10 staff
-       10 employees
-       10 people
-       10 பேர் -> if transcript captures number only
-    */
-
-    const match =
-        text.match(
-            /(\d+)\s*(users?|staff|employees?|people|members?|persons?)/i
-        );
-
-
-    if(match){
-
-        state.users =
-            match[1];
-
-        return true;
-
-    }
-
-
-    /*
-       If AI specifically asked users,
-       bare number is accepted.
-    */
-
-    if(
-        state.lastQuestionType === "users" &&
-        /^\d+$/.test(text)
-    ){
-
-        state.users =
-            text;
-
-        return true;
-
-    }
-
-
-    return false;
-
+function detectProblems(t){
+  if(has(t,["manual","paper","excel","excel sheet","not using software"]))
+    addUnique(state.problems,"Manual / Excel based process");
+  if(has(t,["wastage","waste","material wastage","consumption problem"]))
+    addUnique(state.problems,"Material wastage / consumption tracking");
+  if(has(t,["missing","stock missing","material missing"]))
+    addUnique(state.problems,"Material / stock missing");
 }
 
+/* ---------------- USERS ---------------- */
 
-/* =========================================================
-   PLATFORM
-========================================================= */
-
-function detectPlatform(text){
-
-    /*
-       IMPORTANT FIX
-
-       User can say:
-
-       rendu platform
-       rendu platform um
-       both
-       both platform
-       mobile and computer
-       mobile computer
-       mobile + web
-    */
-
-    if(
-        has(
-            text,
-            [
-                "rendu platform",
-                "rendu platform um",
-                "rendu platform venum",
-                "rendu",
-                "both",
-                "both platform",
-                "both platforms",
-                "two platform",
-                "two platforms",
-                "mobile and computer",
-                "mobile and desktop",
-                "mobile computer",
-                "mobile web",
-                "mobile plus computer",
-                "mobile + computer"
-            ]
-        )
-    ){
-
-        /*
-           Only treat "rendu" as platform
-           when previous question was platform
-           OR message contains platform context.
-        */
-
-        if(
-            state.lastQuestionType === "platform" ||
-            has(
-                text,
-                [
-                    "platform",
-                    "mobile",
-                    "computer",
-                    "desktop",
-                    "web"
-                ]
-            )
-        ){
-
-            state.platform =
-                "Mobile + Computer";
-
-            return true;
-
-        }
-
-    }
-
-
-    if(
-        has(
-            text,
-            [
-                "mobile",
-                "android",
-                "smartphone",
-                "phone app",
-                "mobile app"
-            ]
-        )
-    ){
-
-        state.platform =
-            "Mobile";
-
-        return true;
-
-    }
-
-
-    if(
-        has(
-            text,
-            [
-                "computer",
-                "desktop",
-                "laptop",
-                "web application",
-                "web app",
-                "browser"
-            ]
-        )
-    ){
-
-        state.platform =
-            "Computer / Web";
-
-        return true;
-
-    }
-
-
-    return false;
-
+function detectUsers(t){
+  let m=t.match(/(\d+)\s*(users?|staff|employees?|people|members?|persons?)/i);
+  if(m){state.users=m[1];return true;}
+  if(state.lastQuestionType==="users" && /^\d+$/.test(t)){
+    state.users=t;return true;
+  }
+  return false;
 }
 
+/* ---------------- PLATFORM ---------------- */
 
-/* =========================================================
-   CURRENT SYSTEM
-========================================================= */
+/*
+   Voice can turn:
+   rendu -> rendu
+   rendu -> randu
+   rendu -> friend
+   rendu -> front
+   rendu platform -> and platform
 
-function detectCurrentSystem(text){
+   ONLY correct these when the current question is PLATFORM.
+*/
 
-    if(
-        has(
-            text,
-            [
-                "manual",
-                "manual ah",
-                "manual la",
-                "paper",
-                "not using software"
-            ]
-        )
-    ){
+function platformVoiceCorrection(t){
+  let x=t;
 
-        state.currentSystem =
-            "Manual";
+  if(state.lastQuestionType==="platform"){
+    x=x
+      .replace(/\bfriend\b/g,"rendu")
+      .replace(/\bfrnd\b/g,"rendu")
+      .replace(/\bfront\b/g,"rendu")
+      .replace(/\brand\b/g,"rendu")
+      .replace(/\brandu\b/g,"rendu")
+      .replace(/\brandu\b/g,"rendu")
+      .replace(/\band platform\b/g,"rendu platform")
+      .replace(/\band platforms\b/g,"rendu platforms");
+  }
 
-        return true;
-
-    }
-
-
-    if(
-        has(
-            text,
-            [
-                "excel",
-                "excel sheet",
-                "spreadsheet"
-            ]
-        )
-    ){
-
-        state.currentSystem =
-            "Excel";
-
-        return true;
-
-    }
-
-
-    if(
-        has(
-            text,
-            [
-                "tally"
-            ]
-        )
-    ){
-
-        state.currentSystem =
-            "Tally";
-
-        return true;
-
-    }
-
-
-    if(
-        has(
-            text,
-            [
-                "existing software",
-                "already using software",
-                "already have software"
-            ]
-        )
-    ){
-
-        state.currentSystem =
-            "Existing Software";
-
-        return true;
-
-    }
-
-
-    return false;
-
+  return x;
 }
 
+function detectPlatform(raw){
+  let t=platformVoiceCorrection(raw);
 
-/* =========================================================
-   CONTACT
-========================================================= */
+  if(
+    state.lastQuestionType==="platform" &&
+    (
+      has(t,[
+        "rendu","randu","rendu platform","rendu platforms",
+        "both","both platform","both platforms",
+        "two platform","two platforms",
+        "mobile and computer","mobile and desktop",
+        "mobile computer","mobile web","mobile plus computer",
+        "mobile plus web","mobile + computer","mobile + web",
+        "and platform","and platforms"
+      ])
+    )
+  ){
+    state.platform="Mobile + Computer";
+    return true;
+  }
 
-function detectContact(text){
+  if(has(t,["mobile and computer","mobile and desktop","mobile computer","mobile web","mobile plus computer","mobile plus web","mobile + computer","mobile + web"])){
+    state.platform="Mobile + Computer";
+    return true;
+  }
 
-    const phone =
-        text.match(
-            /(?:\+91[\s-]?)?[6-9]\d{9}/
-        );
+  if(has(t,["mobile","android","smartphone","phone app","mobile app"])){
+    state.platform="Mobile";
+    return true;
+  }
 
+  if(has(t,["computer","desktop","laptop","web application","web app","browser"])){
+    state.platform="Computer / Web";
+    return true;
+  }
 
-    if(phone){
-
-        state.contact =
-            phone[0];
-
-        return true;
-
-    }
-
-
-    const email =
-        text.match(
-            /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i
-        );
-
-
-    if(email){
-
-        state.email =
-            email[0];
-
-        return true;
-
-    }
-
-
-    return false;
-
+  return false;
 }
 
+/* ---------------- CURRENT SYSTEM ---------------- */
 
-/* =========================================================
-   PRICE
-========================================================= */
-
-function isPriceQuestion(text){
-
-    return has(
-        text,
-        [
-            "price",
-            "cost",
-            "rate",
-            "how much",
-            "charges",
-            "pricing",
-            "budget",
-            "amount",
-            "evlo",
-            "evalo"
-        ]
-    );
-
+function detectCurrentSystem(t){
+  if(has(t,["manual","manual ah","manual la","paper","not using software"])){
+    state.currentSystem="Manual";return true;
+  }
+  if(has(t,["excel","excel sheet","spreadsheet"])){
+    state.currentSystem="Excel";return true;
+  }
+  if(has(t,["tally"])){
+    state.currentSystem="Tally";return true;
+  }
+  if(has(t,["existing software","already using software","already have software"])){
+    state.currentSystem="Existing Software";return true;
+  }
+  return false;
 }
 
+/* ---------------- CONTACT ---------------- */
 
-/* =========================================================
-   FAQ ANSWERS
-========================================================= */
+/*
+   For this demo, accept ANY 10 digit number.
+   This is why 1234567890 will close the lead.
+*/
 
-function answerFAQ(text){
+function detectContact(t){
+  const phone=t.match(/(?:\+91[\s-]?)?\d{10}/);
+  if(phone){
+    state.contact=phone[0];
+    return true;
+  }
 
-    if(
-        has(
-            text,
-            [
-                "gst",
-                "gst billing"
-            ]
-        )
-    ){
+  const email=t.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i);
+  if(email){
+    state.email=email[0];
+    return true;
+  }
 
-        return "Yes sir 👍 GST billing support include panna mudiyum. Invoice-la GST calculation, tax details and required reports customize panna mudiyum.";
-
-    }
-
-
-    if(
-        has(
-            text,
-            [
-                "barcode"
-            ]
-        )
-    ){
-
-        return "Yes sir 👍 barcode system include panna mudiyum. Barcode scan panni item details, stock and billing manage panna mudiyum.";
-
-    }
-
-
-    if(
-        has(
-            text,
-            [
-                "backup",
-                "data backup"
-            ]
-        )
-    ){
-
-        return "Yes sir 👍 database backup setup provide panna mudiyum. Exact backup method project requirement based on decide pannalaam.";
-
-    }
-
-
-    if(
-        has(
-            text,
-            [
-                "security",
-                "secure",
-                "login"
-            ]
-        )
-    ){
-
-        return "Yes sir 👍 user login, role-based access and data protection requirements-ku based on implement panna mudiyum.";
-
-    }
-
-
-    if(
-        has(
-            text,
-            [
-                "report",
-                "reports"
-            ]
-        )
-    ){
-
-        return "Yes sir 👍 daily, monthly, customer-wise, site-wise, stock-wise, expense-wise and other business reports customize panna mudiyum.";
-
-    }
-
-
-    if(
-        has(
-            text,
-            [
-                "custom software",
-                "customize",
-                "customised",
-                "customized"
-            ]
-        )
-    ){
-
-        return "Yes sir 👍 KIKT-la unga business process-ku exactly match aagura custom software develop panna mudiyum.";
-
-    }
-
-
-    return "";
-
+  return false;
 }
 
+/* ---------------- PRICE / FAQ ---------------- */
 
-/* =========================================================
-   INDUSTRY SUGGESTIONS
-========================================================= */
+function isPriceQuestion(t){
+  return has(t,["price","cost","rate","how much","charges","pricing","budget","amount","evlo","evalo"]);
+}
+
+function answerFAQ(t){
+  if(has(t,["gst","gst billing"]))
+    return "Yes sir 👍 GST billing support include panna mudiyum. Invoice-la GST calculation, tax details and required reports customize panna mudiyum.";
+
+  if(has(t,["barcode"]))
+    return "Yes sir 👍 barcode system include panna mudiyum. Barcode scan panni item details, stock and billing manage panna mudiyum.";
+
+  if(has(t,["backup","data backup"]))
+    return "Yes sir 👍 database backup setup provide panna mudiyum. Exact backup method project requirement based on decide pannalaam.";
+
+  if(has(t,["security","secure","login"]))
+    return "Yes sir 👍 user login, role-based access and data protection requirements-ku based on implement panna mudiyum.";
+
+  if(has(t,["report","reports"]))
+    return "Yes sir 👍 daily, monthly, customer-wise, site-wise, stock-wise, expense-wise and other business reports customize panna mudiyum.";
+
+  if(has(t,["custom software","customize","customised","customized"]))
+    return "Yes sir 👍 KIKT-la unga business process-ku exactly match aagura custom software develop panna mudiyum.";
+
+  return "";
+}
+
+/* ---------------- INDUSTRY SUGGESTIONS ---------------- */
 
 function industrySuggestions(){
-
-    const map = {
-
-        "Construction":[
-            "Labour Management",
-            "Site Management",
-            "Material Management",
-            "Daily Expense Tracking",
-            "Customer Management",
-            "Project Management"
-        ],
-
-
-        "Textile":[
-            "Production Management",
-            "Yarn / Material Stock",
-            "Order Management",
-            "Quality Management",
-            "Purchase Management",
-            "Customer Management"
-        ],
-
-
-        "Manufacturing":[
-            "Production Management",
-            "Inventory Management",
-            "Purchase Management",
-            "Machine Management",
-            "Quality Management",
-            "Sales Management"
-        ],
-
-
-        "Retail":[
-            "Billing & Invoicing",
-            "Inventory Management",
-            "Barcode Management",
-            "Purchase Management",
-            "Customer Management",
-            "Sales Management"
-        ],
-
-
-        "Wholesale":[
-            "Inventory Management",
-            "Purchase Management",
-            "Sales Management",
-            "Customer Management",
-            "Billing & Invoicing",
-            "Payment Tracking"
-        ],
-
-
-        "Restaurant":[
-            "Restaurant POS",
-            "Table Management",
-            "Kitchen Management",
-            "Inventory Management",
-            "Billing & Invoicing",
-            "Customer Management"
-        ],
-
-
-        "Education":[
-            "Student Management",
-            "Attendance Management",
-            "Fees Management",
-            "Exam Management",
-            "Staff Management",
-            "Reports"
-        ],
-
-
-        "Healthcare":[
-            "Patient Management",
-            "Appointment Management",
-            "Billing & Invoicing",
-            "Pharmacy Management",
-            "Doctor Management",
-            "Reports"
-        ],
-
-
-        "Salon":[
-            "Customer Management",
-            "Appointment Management",
-            "Staff Management",
-            "Billing & Invoicing",
-            "Inventory Management",
-            "Payment Tracking"
-        ],
-
-
-        "Real Estate":[
-            "Property Management",
-            "CRM / Lead Management",
-            "Customer Management",
-            "Site Visit Management",
-            "Payment Tracking",
-            "Follow-up Management"
-        ],
-
-
-        "Logistics":[
-            "Vehicle Management",
-            "Driver Management",
-            "Trip Management",
-            "Fuel Management",
-            "Expense Tracking",
-            "Customer Management"
-        ],
-
-
-        "Service":[
-            "Customer Management",
-            "Service / Job Tracking",
-            "Appointment Management",
-            "Billing & Invoicing",
-            "Inventory Management",
-            "Payment Tracking"
-        ]
-
-    };
-
-
-    return map[state.industry] ||
-    [
-        "Customer Management",
-        "Billing & Invoicing",
-        "Inventory Management",
-        "Expense Tracking",
-        "Employee Management",
-        "Reports"
-    ];
-
+  const map={
+    "Construction":["Labour Management","Site Management","Material Management","Daily Expense Tracking","Customer Management","Project Management"],
+    "Textile":["Production Management","Inventory Management","Order Management","Quality Management","Purchase Management","Customer Management"],
+    "Manufacturing":["Production Management","Inventory Management","Purchase Management","Machine Management","Quality Management","Sales Management"],
+    "Retail":["Billing & Invoicing","Inventory Management","Barcode Management","Purchase Management","Customer Management","Sales Management"],
+    "Wholesale":["Inventory Management","Purchase Management","Sales Management","Customer Management","Billing & Invoicing","Payment Tracking"],
+    "Restaurant":["Restaurant POS","Inventory Management","Billing & Invoicing","Customer Management","Order Management"],
+    "Education":["Student Management","Attendance Management","Fees Management","Exam Management","Staff Management","Reports"],
+    "Healthcare":["Patient Management","Appointment Management","Billing & Invoicing","Pharmacy Management","Doctor Management","Reports"],
+    "Salon":["Customer Management","Appointment Management","Staff Management","Billing & Invoicing","Inventory Management","Payment Tracking"],
+    "Real Estate":["Property Management","CRM / Lead Management","Customer Management","Site Visit Management","Payment Tracking","Follow-up Management"],
+    "Logistics":["Vehicle Management","Driver Management","Trip Management","Fuel Management","Expense Tracking","Customer Management"],
+    "Service":["Customer Management","Service / Job Tracking","Appointment Management","Billing & Invoicing","Inventory Management","Payment Tracking"]
+  };
+  return map[state.industry]||["Customer Management","Billing & Invoicing","Inventory Management","Expense Tracking","Employee Management","Reports"];
 }
 
-
-/* =========================================================
-   NEXT QUESTION
-========================================================= */
+/* ---------------- NEXT STEP ---------------- */
 
 function nextQuestion(){
+  if(!state.industry){
+    state.lastQuestionType="industry";
+    return "Sure sir 👍 unga business endha industry / field-la irukku?";
+  }
 
-    /*
-       1. INDUSTRY
-    */
+  if(state.requirements.length===0){
+    state.lastQuestionType="requirements";
+    const list=industrySuggestions();
+    return "Okay sir 👍 "+state.industry+" business-ku "+list.slice(0,4).join(", ")+" madhiri processes software-la manage panna mudiyum. Ungalukku mainly edhu venum sir?";
+  }
 
-    if(!state.industry){
+  if(!state.users){
+    state.lastQuestionType="users";
+    return "Okay sir 👍 approximately evlo users software use panna poranga?";
+  }
 
-        state.lastQuestionType =
-            "industry";
+  if(!state.platform){
+    state.lastQuestionType="platform";
+    return "Software mobile-la use panna poringala, computer/web-la use panna poringala, illa rendu platform-um venuma sir?";
+  }
 
-        return "Sure sir 👍 unga business endha industry / field-la irukku?";
+  if(!state.currentSystem){
+    state.lastQuestionType="currentSystem";
+    return "Ippo indha process manual / Excel-la manage panreengala, illa already existing software use panreengala sir?";
+  }
 
-    }
+  if(!state.contact && !state.email){
+    state.lastQuestionType="contact";
+    return "Perfect sir 👍 requirement clear-ah understand panniten. Quotation / demo discussion-ku unga contact number share pannunga.";
+  }
 
-
-    /*
-       2. REQUIREMENT
-    */
-
-    if(
-        state.requirements.length === 0
-    ){
-
-        state.lastQuestionType =
-            "requirements";
-
-        const list =
-            industrySuggestions();
-
-        return (
-            "Okay sir 👍 " +
-            state.industry +
-            " business-ku " +
-            list.slice(0,4).join(", ") +
-            " madhiri processes software-la manage panna mudiyum. " +
-            "Ungalukku mainly edhu venum sir?"
-        );
-
-    }
-
-
-    /*
-       3. USERS
-    */
-
-    if(!state.users){
-
-        state.lastQuestionType =
-            "users";
-
-        return "Okay sir 👍 approximately evlo users software use panna poranga?";
-
-    }
-
-
-    /*
-       4. PLATFORM
-    */
-
-    if(!state.platform){
-
-        state.lastQuestionType =
-            "platform";
-
-        return "Software mobile-la use panna poringala, computer/web-la use panna poringala, illa rendu platform-um venuma sir?";
-
-    }
-
-
-    /*
-       5. CURRENT SYSTEM
-    */
-
-    if(!state.currentSystem){
-
-        state.lastQuestionType =
-            "currentSystem";
-
-        return "Ippo indha process manual / Excel-la manage panreengala, illa already existing software use panreengala sir?";
-
-    }
-
-
-    /*
-       6. CONTACT
-    */
-
-    if(
-        !state.contact &&
-        !state.email
-    ){
-
-        state.lastQuestionType =
-            "contact";
-
-        return "Perfect sir 👍 requirement clear-ah understand panniten. Quotation / demo discussion-ku unga contact number share pannunga.";
-
-    }
-
-
-    return "";
-
+  return "";
 }
 
-
-/* =========================================================
-   PRICE ANSWER
-========================================================= */
-
-function priceAnswer(){
-
-    state.priceAsked =
-        true;
-
-
-    state.lastQuestionType =
-        "contact";
-
-
-    let text =
-        "Sir, software cost exact-ah requirement based on quotation prepare pannitu sollanum. Modules, users, platform and customization based on cost vary aagum.";
-
-
-    if(
-        state.requirements.length
-    ){
-
-        text +=
-            "\n\nIppo note pannirukkura requirements: " +
-            state.requirements.join(", ") +
-            ".";
-
-    }
-
-
-    if(state.users){
-
-        text +=
-            "\nUsers: " +
-            state.users +
-            ".";
-
-    }
-
-
-    if(state.platform){
-
-        text +=
-            "\nPlatform: " +
-            state.platform +
-            ".";
-
-    }
-
-
-    text +=
-        "\n\nContact number share pannina KIKT team quotation/demo discussion continue pannuvanga sir.";
-
-
-    return text;
-
-}
-
-
-/* =========================================================
-   LEAD CLOSE
-========================================================= */
+/* ---------------- CLOSE ---------------- */
 
 function closeLead(){
+  state.leadClosed=true;
 
-    state.leadClosed =
-        true;
+  let text="Thank you sir 👍 "+(state.contact||state.email)+" contact details note panniten.";
 
+  if(state.industry) text+="\nIndustry: "+state.industry;
+  if(state.requirements.length) text+="\nRequirements: "+state.requirements.join(", ");
+  if(state.users) text+="\nUsers: "+state.users;
+  if(state.platform) text+="\nPlatform: "+state.platform;
+  if(state.currentSystem) text+="\nCurrent system: "+state.currentSystem;
 
-    let text =
-        "Thank you sir 👍 unga contact number note panniten.";
-
-
-    if(state.industry){
-
-        text +=
-            "\nIndustry: " +
-            state.industry;
-
-    }
-
-
-    if(
-        state.requirements.length
-    ){
-
-        text +=
-            "\nRequirements: " +
-            state.requirements.join(", ");
-
-    }
-
-
-    if(state.users){
-
-        text +=
-            "\nUsers: " +
-            state.users;
-
-    }
-
-
-    if(state.platform){
-
-        text +=
-            "\nPlatform: " +
-            state.platform;
-
-    }
-
-
-    if(state.currentSystem){
-
-        text +=
-            "\nCurrent system: " +
-            state.currentSystem;
-
-    }
-
-
-    text +=
-        "\n\nKIKT team unga requirement based on quotation / demo discussion-ku contact pannuvanga sir. 👍";
-
-
-    return text;
-
+  text+="\n\nKIKT team unga requirement based on quotation / demo discussion-ku contact pannuvanga sir. 👍";
+  return text;
 }
 
+/* ---------------- MAIN ENGINE ---------------- */
 
-/* =========================================================
-   PROCESS MESSAGE
-========================================================= */
+async function processMessage(raw){
+  let t=normalize(raw);
+  if(!t)return;
 
-async function processMessage(rawText){
+  /* Extract EVERYTHING first */
+  const oldIndustry=state.industry;
 
-    const text =
-        normalize(rawText);
+  detectIndustry(t);
+  detectRequirements(t);
+  detectProblems(t);
+  detectUsers(t);
+  detectPlatform(t);
+  detectCurrentSystem(t);
+  const gotContact=detectContact(t);
 
-
-    if(!text)
-        return;
-
-
-    /*
-       =====================================================
-       FIRST: Extract information
-       =====================================================
-    */
-
-    const oldIndustry =
-        state.industry;
-
-
-    detectIndustry(text);
-
-
-    /*
-       If industry changed,
-       old requirement was already cleared
-       inside detectIndustry().
-    */
-
-
-    detectRequirements(text);
-
-    detectProblems(text);
-
-    detectUsers(text);
-
-    detectPlatform(text);
-
-    detectCurrentSystem(text);
-
-    detectContact(text);
-
-
-    /*
-       =====================================================
-       CONTACT
-       =====================================================
-    */
-
-    if(
-        state.contact &&
-        state.requirements.length > 0 &&
-        !state.leadClosed
-    ){
-
-        aiSay(
-            closeLead()
-        );
-
-        return;
-
+  /* Contact ALWAYS gets highest priority.
+     This prevents the old repeated summary bug. */
+  if(gotContact || state.contact || state.email){
+    if(!state.leadClosed){
+      aiSay(closeLead());
+    }else{
+      aiSay("Yes sir 👍 unga contact details already note pannirukkom. Vera edhavadhu requirement / question irundha sollunga.");
     }
+    return;
+  }
 
+  /* Price */
+  if(isPriceQuestion(t)){
+    let x="Sir, software cost exact-ah requirement based on quotation prepare pannitu sollanum. Modules, users, platform and customization based on cost vary aagum.";
+    if(state.requirements.length) x+="\n\nIppo note pannirukkura requirements: "+state.requirements.join(", ")+".";
+    if(state.users) x+="\nUsers: "+state.users+".";
+    if(state.platform) x+="\nPlatform: "+state.platform+".";
+    x+="\n\nContact number share pannina KIKT team quotation/demo discussion continue pannuvanga sir.";
+    state.lastQuestionType="contact";
+    aiSay(x);
+    return;
+  }
 
-    /*
-       =====================================================
-       PRICE
-       =====================================================
-    */
-
-    if(
-        isPriceQuestion(text)
-    ){
-
-        aiSay(
-            priceAnswer()
-        );
-
-        return;
-
+  /* FAQ first */
+  const faq=answerFAQ(t);
+  if(faq){
+    aiSay(faq);
+    if(!state.leadClosed){
+      const next=nextQuestion();
+      if(next)setTimeout(()=>aiSay(next),500);
     }
-
-
-    /*
-       =====================================================
-       FAQ
-       =====================================================
-    */
-
-    const faq =
-        answerFAQ(text);
-
-
-    if(faq){
-
-        aiSay(faq);
-
-
-        /*
-           Answer question first.
-           Then continue from current context.
-        */
-
-        if(
-            !state.leadClosed
-        ){
-
-            const next =
-                nextQuestion();
-
-
-            if(next){
-
-                setTimeout(
-                    ()=>{
-                        aiSay(next);
-                    },
-                    650
-                );
-
-            }
-
-        }
-
-        return;
-
-    }
-
-
-    /*
-       =====================================================
-       IF USER ANSWERED CURRENT QUESTION
-       =====================================================
-    */
-
-
-    /*
-       USERS ANSWER
-
-       Example:
-       AI: How many users?
-       User: 10
-
-       Do NOT repeat requirement summary.
-    */
-
-    if(
-        state.lastQuestionType === "users" &&
-        state.users
-    ){
-
-        const next =
-            nextQuestion();
-
-
-        aiSay(
-            "Okay sir 👍 " +
-            state.users +
-            " users-nu note panniten." +
-            (
-                next
-                ? "\n\n" + next
-                : ""
-            )
-        );
-
-        return;
-
-    }
-
-
-    /*
-       PLATFORM ANSWER
-
-       Example:
-       AI: Mobile / computer / both?
-       User: rendu platform um venum
-    */
-
-    if(
-        state.lastQuestionType === "platform" &&
-        state.platform
-    ){
-
-        const next =
-            nextQuestion();
-
-
-        aiSay(
-            "Perfect sir 👍 " +
-            state.platform +
-            " platform-nu note panniten." +
-            (
-                next
-                ? "\n\n" + next
-                : ""
-            )
-        );
-
-        return;
-
-    }
-
-
-    /*
-       CURRENT SYSTEM ANSWER
-    */
-
-    if(
-        state.lastQuestionType === "currentSystem" &&
-        state.currentSystem
-    ){
-
-        const next =
-            nextQuestion();
-
-
-        aiSay(
-            "Okay sir 👍 current system " +
-            state.currentSystem +
-            " nu note panniten." +
-            (
-                next
-                ? "\n\n" + next
-                : ""
-            )
-        );
-
-        return;
-
-    }
-
-
-    /*
-       =====================================================
-       INDUSTRY ONLY
-       =====================================================
-    */
-
-    if(
-        state.industry &&
-        state.requirements.length === 0
-    ){
-
-        /*
-           If customer changed:
-           salon -> hospital
-        */
-
-        const list =
-            industrySuggestions();
-
-
-        state.lastQuestionType =
-            "requirements";
-
-
-        aiSay(
-            "Okay sir 👍 " +
-            state.industry +
-            " software requirement-nu note panniten. " +
-            list.slice(0,4).join(", ") +
-            " madhiri modules available. " +
-            "Ungalukku mainly edhu venum sir?"
-        );
-
-
-        return;
-
-    }
-
-
-    /*
-       =====================================================
-       REQUIREMENTS FOUND
-       =====================================================
-    */
-
-    if(
-        state.requirements.length > 0
-    ){
-
-        let response =
-            "Yes sir 👍 ";
-
-
-        if(state.industry){
-
-            response +=
-                state.industry +
-                " business requirement-nu note panniten. ";
-
-        }
-
-
-        response +=
-            "Neenga sonna " +
-            state.requirements.join(", ") +
-            " software-la manage panna mudiyum.";
-
-
-        if(
-            state.problems.length
-        ){
-
-            response +=
-                "\n" +
-                state.problems.join(", ") +
-                " problem-um software workflow-la handle panna mudiyum.";
-
-        }
-
-
-        const next =
-            nextQuestion();
-
-
-        if(next){
-
-            response +=
-                "\n\n" +
-                next;
-
-        }
-
-
-        aiSay(
-            response
-        );
-
-
-        return;
-
-    }
-
-
-    /*
-       =====================================================
-       DEFAULT
-       =====================================================
-    */
-
-    aiSay(
-        nextQuestion()
-    );
-
+    return;
+  }
+
+  /* Direct answer to current question */
+  if(state.lastQuestionType==="users" && state.users){
+    const next=nextQuestion();
+    aiSay("Okay sir 👍 "+state.users+" users-nu note panniten."+ (next?"\n\n"+next:""));
+    return;
+  }
+
+  if(state.lastQuestionType==="platform" && state.platform){
+    const next=nextQuestion();
+    aiSay("Perfect sir 👍 "+state.platform+" platform-nu note panniten."+ (next?"\n\n"+next:""));
+    return;
+  }
+
+  if(state.lastQuestionType==="currentSystem" && state.currentSystem){
+    const next=nextQuestion();
+    aiSay("Okay sir 👍 current system "+state.currentSystem+" nu note panniten."+ (next?"\n\n"+next:""));
+    return;
+  }
+
+  /* Industry only */
+  if(state.industry && state.requirements.length===0){
+    state.lastQuestionType="requirements";
+    const list=industrySuggestions();
+    aiSay("Okay sir 👍 "+state.industry+" software requirement-nu note panniten. "+list.slice(0,4).join(", ")+" madhiri modules available. Ungalukku mainly edhu venum sir?");
+    return;
+  }
+
+  /* Requirements found */
+  if(state.requirements.length>0){
+    let response="Yes sir 👍 ";
+    if(state.industry) response+=state.industry+" business requirement-nu note panniten. ";
+    response+="Neenga sonna "+state.requirements.join(", ")+" software-la manage panna mudiyum.";
+    if(state.problems.length) response+="\n"+state.problems.join(", ")+" problem-um software workflow-la handle panna mudiyum.";
+
+    const next=nextQuestion();
+    if(next)response+="\n\n"+next;
+    aiSay(response);
+    return;
+  }
+
+  aiSay(nextQuestion());
 }
 
-
-/* =========================================================
-   SEND TEXT
-========================================================= */
+/* ---------------- SEND ---------------- */
 
 async function sendText(text){
-
-    if(!text)
-        return;
-
-
-    userSay(text);
-
-
-    inputEl.value =
-        "";
-
-
-    sendBtn.disabled =
-        true;
-
-
-    typingEl.textContent =
-        "AI is thinking...";
-
-
-    try{
-
-        await processMessage(
-            text
-        );
-
-    }
-    catch(error){
-
-        console.error(error);
-
-        aiSay(
-            "Sorry sir, konjam technical issue. Requirement-a once more simple-ah sollunga."
-        );
-
-    }
-
-
-    typingEl.textContent =
-        "";
-
-
-    sendBtn.disabled =
-        false;
-
-
-    inputEl.focus();
-
+  if(!text)return;
+  userSay(text);
+  inputEl.value="";
+  sendBtn.disabled=true;
+  typingEl.textContent="AI is thinking...";
+  try{
+    await processMessage(text);
+  }catch(e){
+    console.error(e);
+    aiSay("Sorry sir, konjam technical issue. Requirement-a once more simple-ah sollunga.");
+  }
+  typingEl.textContent="";
+  sendBtn.disabled=false;
+  inputEl.focus();
 }
 
+sendBtn.addEventListener("click",()=>{
+  const t=inputEl.value.trim();
+  if(t)sendText(t);
+});
 
-/* =========================================================
-   SEND BUTTON
-========================================================= */
+inputEl.addEventListener("keydown",e=>{
+  if(e.key==="Enter"){
+    e.preventDefault();
+    const t=inputEl.value.trim();
+    if(t)sendText(t);
+  }
+});
 
-sendBtn.addEventListener(
-    "click",
-    function(){
+/* ---------------- START / STOP ---------------- */
 
-        const text =
-            inputEl.value.trim();
+startBtn.addEventListener("click",()=>{
+  if(state.started)return;
 
-        if(text){
+  state.started=true;
 
-            sendText(text);
+  aiSay("வணக்கம் sir! KIKT Software Solutions-ல இருந்து பேசுறேன். உங்க business எந்த field-la இருந்தாலும், உங்க process அல்லது problem-ஐ சொல்லுங்க. அதை based on software solution எப்படி customize பண்ணலாம் என்று நான் guide பண்றேன்.");
 
-        }
+  statusEl.textContent="AI Ready";
+});
 
+stopBtn.addEventListener("click",()=>{
+  state.started=false;
+  stopAudio();
+
+  if(recognition && state.microphoneEnabled){
+    state.microphoneEnabled=false;
+    try{recognition.stop();}catch(e){}
+  }
+
+  micBtn.textContent="🎙 Microphone OFF";
+  micBtn.classList.remove("active");
+  statusEl.textContent="AI Stopped";
+});
+
+/* ---------------- SPEAK ---------------- */
+
+speakBtn.addEventListener("click",()=>{
+  state.speakEnabled=!state.speakEnabled;
+
+  if(state.speakEnabled){
+    speakBtn.textContent="🔊 Speak AI: ON";
+    speakBtn.classList.add("active");
+    statusEl.textContent="Voice enabled";
+  }else{
+    stopAudio();
+    speakBtn.textContent="🔇 Speak AI: OFF";
+    speakBtn.classList.remove("active");
+    statusEl.textContent="Voice disabled";
+  }
+});
+
+/* ---------------- MICROPHONE ---------------- */
+
+if("SpeechRecognition" in window || "webkitSpeechRecognition" in window){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  recognition=new SR();
+  speechSupported=true;
+
+  recognition.continuous=true;
+  recognition.interimResults=true;
+
+  /* en-IN is kept because user speaks Tanglish/English terms */
+  recognition.lang="en-IN";
+
+  recognition.onstart=()=>{
+    statusEl.textContent="🎙 Listening...";
+    micBtn.textContent="🎙 Microphone ON";
+    micBtn.classList.add("active");
+  };
+
+  recognition.onresult=event=>{
+    let finalText="";
+    let interim="";
+
+    for(let i=event.resultIndex;i<event.results.length;i++){
+      const tx=event.results[i][0].transcript;
+      if(event.results[i].isFinal) finalText+=tx+" ";
+      else interim+=tx;
     }
-);
 
-
-/* =========================================================
-   ENTER
-========================================================= */
-
-inputEl.addEventListener(
-    "keydown",
-    function(event){
-
-        if(
-            event.key === "Enter"
-        ){
-
-            event.preventDefault();
-
-            const text =
-                inputEl.value.trim();
-
-
-            if(text){
-
-                sendText(text);
-
-            }
-
-        }
-
+    if(interim){
+      inputEl.value=interim;
+      typingEl.textContent="Listening: "+interim;
     }
-);
 
+    if(finalText.trim()){
+      const captured=finalText.trim();
+      inputEl.value=captured;
+      typingEl.textContent="Voice captured";
 
-/* =========================================================
-   START AI
-========================================================= */
-
-startBtn.addEventListener(
-    "click",
-    function(){
-
-        if(
-            state.started
-        ){
-
-            statusEl.textContent =
-                "AI already started";
-
-            return;
-
-        }
-
-
-        state.started =
-            true;
-
-
-        const greeting =
-            "வணக்கம் sir! KIKT Software Solutions-ல இருந்து பேசுறேன். உங்க business எந்த field-la இருந்தாலும், உங்க process அல்லது problem-ஐ சொல்லுங்க. அதை based on software solution எப்படி customize பண்ணலாம் என்று நான் guide பண்றேன்.";
-
-
-        aiSay(
-            greeting
-        );
-
-
-        statusEl.textContent =
-            "AI Ready";
-
+      setTimeout(()=>{
+        if(captured)sendText(captured);
+      },300);
     }
-);
+  };
 
+  recognition.onerror=event=>{
+    console.log("Speech error:",event.error);
 
-/* =========================================================
-   STOP AI
-========================================================= */
-
-stopBtn.addEventListener(
-    "click",
-    function(){
-
-        state.started =
-            false;
-
-
-        stopAudio();
-
-
-        if(
-            recognition &&
-            state.microphoneEnabled
-        ){
-
-            state.microphoneEnabled =
-                false;
-
-            try{
-
-                recognition.stop();
-
-            }
-            catch(e){}
-
-        }
-
-
-        micBtn.textContent =
-            "🎙 Microphone OFF";
-
-        micBtn.classList.remove(
-            "active"
-        );
-
-
-        statusEl.textContent =
-            "AI Stopped";
-
+    if(event.error==="not-allowed"){
+      state.microphoneEnabled=false;
+      micBtn.textContent="🎙 Microphone OFF";
+      micBtn.classList.remove("active");
+      statusEl.textContent="Microphone permission denied";
     }
-);
+  };
 
-
-/* =========================================================
-   SPEAK AI
-========================================================= */
-
-speakBtn.addEventListener(
-    "click",
-    function(){
-
-        state.speakEnabled =
-            !state.speakEnabled;
-
-
-        if(
-            state.speakEnabled
-        ){
-
-            speakBtn.textContent =
-                "🔊 Speak AI: ON";
-
-            speakBtn.classList.add(
-                "active"
-            );
-
-
-            statusEl.textContent =
-                "Voice enabled";
-
-        }
-        else{
-
-            stopAudio();
-
-
-            speakBtn.textContent =
-                "🔇 Speak AI: OFF";
-
-            speakBtn.classList.remove(
-                "active"
-            );
-
-
-            statusEl.textContent =
-                "Voice disabled";
-
-        }
-
+  recognition.onend=()=>{
+    if(state.microphoneEnabled && state.started){
+      setTimeout(()=>{
+        try{recognition.start();}catch(e){}
+      },250);
+    }else{
+      micBtn.textContent="🎙 Microphone OFF";
+      micBtn.classList.remove("active");
     }
-);
+  };
+}
 
+micBtn.addEventListener("click",()=>{
+  if(!speechSupported){
+    alert("Chrome browser use pannunga. Indha browser-la speech recognition support illa.");
+    return;
+  }
 
-/* =========================================================
-   MICROPHONE
-========================================================= */
+  if(!state.started){
+    alert("First click Start AI.");
+    return;
+  }
 
-micBtn.addEventListener(
-    "click",
-    function(){
+  if(state.microphoneEnabled){
+    state.microphoneEnabled=false;
+    try{recognition.stop();}catch(e){}
+    micBtn.textContent="🎙 Microphone OFF";
+    micBtn.classList.remove("active");
+    statusEl.textContent="AI Ready";
+    return;
+  }
 
-        if(!speechSupported){
+  state.microphoneEnabled=true;
 
-            alert(
-                "Your browser does not support microphone speech recognition. Please use Google Chrome."
-            );
+  try{
+    recognition.start();
+  }catch(e){
+    console.log(e);
+  }
+});
 
-            return;
-
-        }
-
-
-        if(!state.started){
-
-            alert(
-                "First click Start AI."
-            );
-
-            return;
-
-        }
-
-
-        /*
-           TURN OFF
-        */
-
-        if(
-            state.microphoneEnabled
-        ){
-
-            state.microphoneEnabled =
-                false;
-
-
-            try{
-
-                recognition.stop();
-
-            }
-            catch(e){}
-
-
-            micBtn.textContent =
-                "🎙 Microphone OFF";
-
-            micBtn.classList.remove(
-                "active"
-            );
-
-
-            statusEl.textContent =
-                "AI Ready";
-
-
-            return;
-
-        }
-
-
-        /*
-           TURN ON
-        */
-
-        state.microphoneEnabled =
-            true;
-
-
-        try{
-
-            recognition.start();
-
-        }
-        catch(error){
-
-            console.log(error);
-
-        }
-
-    }
-);
-
-
-/* =========================================================
-   INITIAL
-========================================================= */
-
-statusEl.textContent =
-    "AI Ready";
-
+statusEl.textContent="AI Ready";
 </script>
-
 </body>
-
 </html>
