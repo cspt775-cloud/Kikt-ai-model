@@ -48,6 +48,11 @@ button {
   cursor: pointer;
 }
 
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .start {
   background: #1769d2;
 }
@@ -77,6 +82,8 @@ button {
   margin-top: 15px;
   padding: 15px;
   min-height: 170px;
+  max-height: 380px;
+  overflow-y: auto;
   background: #f5f7fb;
   border-radius: 12px;
   white-space: pre-wrap;
@@ -132,7 +139,7 @@ input {
     placeholder="Type your message here"
   >
 
-  <button class="send" onclick="sendMessage()">
+  <button class="send" id="sendButton" onclick="sendMessage()">
     Send Message
   </button>
 
@@ -146,70 +153,25 @@ input {
 const chat = document.getElementById("chat");
 const statusBox = document.getElementById("status");
 const messageBox = document.getElementById("message");
+const sendButton = document.getElementById("sendButton");
 
 let currentAudio = null;
 let currentAudioUrl = null;
 let recognition = null;
 let isStopped = false;
+let isThinking = false;
+
+/* Conversation memory for this browser session */
+let conversation = [
+  {
+    role: "assistant",
+    content: "வணக்கம் சார்! KIKT Software Solutions-ல இருந்து பேசுறேன். உங்களுக்கு என்ன மாதிரி software தேவைப்படுது?"
+  }
+];
 
 function addMessage(name, text) {
   chat.textContent += "\n\n" + name + ": " + text;
   chat.scrollTop = chat.scrollHeight;
-}
-
-/* BELLA VOICE API */
-async function speak(text) {
-  stopCurrentAudio();
-  isStopped = false;
-
-  statusBox.textContent = "Bella voice generating...";
-
-  try {
-    const response = await fetch("/api/tts", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        text: text
-      })
-    });
-
-    if (!response.ok) {
-      let errorMessage = "Voice generation failed";
-
-      try {
-        const errorData = await response.json();
-        if (errorData.error) {
-          errorMessage = errorData.error;
-        }
-      } catch (e) {}
-
-      throw new Error(errorMessage);
-    }
-
-    const audioBlob = await response.blob();
-    currentAudioUrl = URL.createObjectURL(audioBlob);
-    currentAudio = new Audio(currentAudioUrl);
-
-    currentAudio.onended = () => {
-      cleanupAudio();
-      statusBox.textContent = "Bella voice finished.";
-    };
-
-    currentAudio.onerror = () => {
-      cleanupAudio();
-      statusBox.textContent = "Audio playback failed.";
-    };
-
-    await currentAudio.play();
-
-    statusBox.textContent = "Bella is speaking...";
-
-  } catch (error) {
-    console.error(error);
-    statusBox.textContent = "Bella voice error: " + error.message;
-  }
 }
 
 function cleanupAudio() {
@@ -230,45 +192,83 @@ function stopCurrentAudio() {
   cleanupAudio();
 }
 
-/* START DEMO */
+/* BELLA VOICE */
+async function speak(text) {
+  stopCurrentAudio();
+  isStopped = false;
+
+  statusBox.textContent = "Bella voice generating...";
+
+  try {
+    const response = await fetch("/api/tts", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ text })
+    });
+
+    if (!response.ok) {
+      let errorMessage = "Voice generation failed";
+
+      try {
+        const errorData = await response.json();
+        if (errorData.error) {
+          errorMessage = errorData.error;
+        }
+      } catch (e) {}
+
+      throw new Error(errorMessage);
+    }
+
+    const audioBlob = await response.blob();
+
+    if (isStopped) return;
+
+    currentAudioUrl = URL.createObjectURL(audioBlob);
+    currentAudio = new Audio(currentAudioUrl);
+
+    currentAudio.onended = () => {
+      cleanupAudio();
+      if (!isStopped) {
+        statusBox.textContent = "Bella voice finished. You can reply.";
+      }
+    };
+
+    currentAudio.onerror = () => {
+      cleanupAudio();
+      statusBox.textContent = "Audio playback failed.";
+    };
+
+    await currentAudio.play();
+
+    statusBox.textContent = "Bella is speaking...";
+
+  } catch (error) {
+    console.error(error);
+    statusBox.textContent = "Bella voice error: " + error.message;
+  }
+}
+
+/* START / RESET CONVERSATION */
 function startAI() {
-  const greeting =
-    "ஹலோ சார், KIKT Software Solutions-ல இருந்து பேசுறேன். " +
-    "உங்களுக்கு என்ன மாதிரி software தேவைப்படுது?";
+  stopCurrentAudio();
+  isStopped = false;
 
-  addMessage("KIKT AI", greeting);
-  speak(greeting);
+  conversation = [
+    {
+      role: "assistant",
+      content: "வணக்கம் சார்! KIKT Software Solutions-ல இருந்து பேசுறேன். உங்களுக்கு என்ன மாதிரி software தேவைப்படுது?"
+    }
+  ];
+
+  chat.textContent = "KIKT AI: " + conversation[0].content;
+
+  speak(conversation[0].content);
 }
 
-/* SAMPLE DEMO REPLIES */
-function getReply(text) {
-  const t = text.toLowerCase();
-
-  if (t.includes("website")) {
-    return "சரி சார். Business website வேணுமா, இல்ல enquiry form உடன் website வேணுமா?";
-  }
-
-  if (t.includes("app")) {
-    return "சரி சார். Android app வேணுமா, இல்ல web application வேணுமா?";
-  }
-
-  if (t.includes("billing")) {
-    return "Billing software-ல sales, stock, invoice manage பண்ணணுமா சார்?";
-  }
-
-  if (t.includes("price") || t.includes("cost")) {
-    return "சார், உங்க requirement-ஐப் பொறுத்து cost மாறும். தேவையான features சொன்னா estimate சொல்லலாம்.";
-  }
-
-  if (t.includes("hello") || t.includes("hi")) {
-    return "ஹலோ சார்! சொல்லுங்க, உங்களுக்கு என்ன மாதிரி software தேவைப்படுது?";
-  }
-
-  return "சரி சார், இன்னும் கொஞ்சம் detail-ஆ சொல்லுங்க. உங்க business requirement-க்கு ஏத்த software solution பற்றி பேசலாம்.";
-}
-
-/* SEND TYPED MESSAGE */
-function sendMessage() {
+/* REAL AI CHAT */
+async function sendMessage() {
   const text = messageBox.value.trim();
 
   if (!text) {
@@ -276,16 +276,72 @@ function sendMessage() {
     return;
   }
 
-  messageBox.value = "";
+  if (isThinking) {
+    statusBox.textContent = "Please wait, AI is preparing the reply...";
+    return;
+  }
 
+  messageBox.value = "";
   addMessage("Customer", text);
 
-  const reply = getReply(text);
+  conversation.push({
+    role: "user",
+    content: text
+  });
 
-  addMessage("KIKT AI", reply);
+  isThinking = true;
+  sendButton.disabled = true;
+  statusBox.textContent = "AI is understanding your requirement...";
 
-  speak(reply);
+  try {
+    const response = await fetch("/api/chat", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        messages: conversation
+      })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || "AI chat request failed.");
+    }
+
+    const reply = data.reply;
+
+    if (!reply) {
+      throw new Error("AI returned an empty reply.");
+    }
+
+    conversation.push({
+      role: "assistant",
+      content: reply
+    });
+
+    addMessage("KIKT AI", reply);
+
+    await speak(reply);
+
+  } catch (error) {
+    console.error(error);
+    statusBox.textContent = "AI error: " + error.message;
+    addMessage("System", "AI reply failed. Please try again.");
+  } finally {
+    isThinking = false;
+    sendButton.disabled = false;
+  }
 }
+
+/* ENTER KEY TO SEND */
+messageBox.addEventListener("keydown", function(event) {
+  if (event.key === "Enter") {
+    event.preventDefault();
+    sendMessage();
+  }
+});
 
 /* MICROPHONE INPUT */
 function startMic() {
@@ -296,6 +352,11 @@ function startMic() {
   if (!SpeechRecognition) {
     statusBox.textContent =
       "Speech recognition not supported. Please type your message.";
+    return;
+  }
+
+  if (isThinking) {
+    statusBox.textContent = "Please wait for the current AI reply.";
     return;
   }
 
@@ -311,8 +372,7 @@ function startMic() {
     };
 
     recognition.onresult = (event) => {
-      const spokenText =
-        event.results[0][0].transcript;
+      const spokenText = event.results[0][0].transcript;
 
       messageBox.value = spokenText;
       statusBox.textContent = "Heard: " + spokenText;
