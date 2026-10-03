@@ -3,119 +3,278 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  if (!process.env.OPENAI_API_KEY) {
+  const apiKey = process.env.GEMINI_API_KEY;
+
+  if (!apiKey) {
     return res.status(500).json({
-      error: "OPENAI_API_KEY is missing in Vercel environment variables."
+      error: "GEMINI_API_KEY is not configured in Vercel."
     });
   }
 
   try {
-    const messages = req.body?.messages;
+    const {
+      message = "",
+      history = [],
+      memory = {}
+    } = req.body || {};
 
-    if (!Array.isArray(messages) || messages.length === 0) {
-      return res.status(400).json({ error: "Conversation messages are required." });
+    if (!message.trim()) {
+      return res.status(400).json({ error: "Message is required." });
     }
 
-    const safeMessages = messages
-      .filter((item) =>
-        item &&
-        ["user", "assistant"].includes(item.role) &&
-        typeof item.content === "string"
-      )
-      .slice(-16)
-      .map((item) => ({
-        role: item.role,
-        content: item.content.slice(0, 3000)
-      }));
+    const systemPrompt = `
+You are the AI Sales & Support Assistant for KIKT Software Solutions.
 
-    const response = await fetch("https://api.openai.com/v1/responses", {
+Your job is to understand customers naturally and help identify the software solution they need.
+
+LANGUAGE:
+- Understand Tamil, Tanglish and English.
+- Reply naturally in the customer's language.
+- For Tanglish, use simple spoken Tamil written in English.
+- Sound like a real helpful sales/support person, NOT a questionnaire.
+- You may use "sir" naturally, but don't overuse it.
+
+IMPORTANT CONVERSATION RULES:
+
+1. Understand meaning even when grammar is poor, words are misspelled,
+   or speech-to-text has mistakes.
+
+2. Infer the customer's industry and requirements from their message.
+   Do NOT ask "what industry?" when it can already be inferred.
+
+3. NEVER ask a question that the customer has already answered.
+
+4. Ask only ONE useful next question at a time.
+
+5. If the customer gives multiple requirements in one message,
+   remember ALL of them.
+
+6. If the customer corrects something, update the information.
+   Do not continue with the old assumption.
+
+7. If the customer says "I don't know", "you suggest", etc.,
+   suggest suitable software modules based on their problem.
+
+8. If the customer asks another question in the middle of the sales
+   conversation, answer that question first and then continue naturally.
+
+9. Never invent exact prices, delivery dates, guarantees or existing
+   KIKT features that were not provided.
+
+10. If the customer asks about price, explain that quotation depends
+    on requirements and scope.
+
+11. If the customer provides a phone number:
+    - save it as contact
+    - confirm it briefly
+    - set leadClosed=true
+    - NEVER ask for the phone number again.
+
+12. If email is provided, remember it and don't ask again.
+
+13. NEVER restart the conversation.
+
+14. NEVER repeat a generic introduction after every message.
+
+15. If customer says:
+    "enaku meta ads la vara lead eduthu sales follow up
+     panara mari app venu"
+
+    Understand:
+    - likely digital marketing / lead generation business
+    - Meta Ads lead capture
+    - lead management
+    - sales follow-up
+
+    Do NOT ask "what industry?" immediately.
+
+16. If customer then says:
+    "digital marketing"
+
+    Do NOT repeat the previous answer.
+    Continue with the next useful question.
+
+17. If enough information is available, move toward quotation/contact
+    instead of asking unnecessary questions.
+
+18. Do not claim that a quotation, meeting or demo was actually booked
+    unless the user has done it through this interface.
+
+CURRENT MEMORY:
+${JSON.stringify(memory, null, 2)}
+
+CONVERSATION HISTORY:
+${JSON.stringify(history.slice(-20), null, 2)}
+
+LATEST CUSTOMER MESSAGE:
+${message}
+
+Return ONLY valid JSON:
+
+{
+  "reply": "complete natural reply to customer",
+  "memory": {
+    "industry": "",
+    "requirements": [],
+    "problems": [],
+    "users": "",
+    "platform": "",
+    "currentSystem": "",
+    "contact": "",
+    "email": "",
+    "leadClosed": false
+  },
+  "nextQuestion": "",
+  "shouldClose": false
+}
+
+Memory rules:
+- Preserve existing information.
+- Add new requirements instead of deleting old ones.
+- Update information when customer corrects it.
+- Never put internal reasoning inside reply.
+`;
+
+    const contents = [];
+
+    for (const item of history.slice(-20)) {
+      if (!item || !item.role || !item.text) continue;
+
+      contents.push({
+        role: item.role === "assistant" ? "model" : "user",
+        parts: [{ text: String(item.text) }]
+      });
+    }
+
+    contents.push({
+      role: "user",
+      parts: [{
+        text: `CURRENT MEMORY:
+${JSON.stringify(memory)}
+
+LATEST MESSAGE:
+${message}`
+      }]
+    });
+
+    const url =
+      "https://generativelanguage.googleapis.com/v1beta/models/" +
+      "gemini-2.5-flash:generateContent?key=" +
+      encodeURIComponent(apiKey);
+
+    const response = await fetch(url, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`
+        "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        model: "gpt-4.1-mini",
-        instructions: `
-You are Bella, a friendly female AI voice assistant for KIKT Software Solutions.
-
-Your job is to speak naturally with potential customers and understand their software requirements.
-
-LANGUAGE AND STYLE:
-- Speak in natural conversational Tamil mixed with commonly used English words (Tanglish).
-- Do not use formal literary Tamil.
-- Sound warm, polite, friendly, and professional.
-- Address the customer as "சார்" naturally, but do not repeat it in every sentence.
-- Keep replies short and easy to understand because the reply will be spoken aloud.
-- Usually reply in 1 to 3 sentences.
-- Do not repeat the same generic reply.
-- Never say that you are using scripted replies.
-
-CONVERSATION:
-- Understand the customer's exact question.
-- Remember and use details from earlier messages in this conversation.
-- Ask only one relevant follow-up question at a time.
-- If the customer gives a clear answer, acknowledge it and move to the next useful question.
-- Do not ask for information the customer has already provided.
-- If the customer asks about website, mobile app, billing software, inventory, CRM, or custom software, ask relevant questions to understand their business and required features.
-- If they ask about price, explain that pricing depends on scope and features. Ask what they need before giving an estimate.
-- Do not invent KIKT's exact prices, delivery timelines, client names, guarantees, or technical capabilities.
-- If you do not know a company-specific fact, say politely that the KIKT team can confirm it.
-- Do not give the same answer to unrelated questions.
-- Do not pretend that a booking, quotation, or callback has been arranged unless the customer actually completed that action.
-
-Example:
-Customer: "எங்களுக்கு billing software வேணும்"
-Assistant: "சரி சார். எந்த business-க்காக billing software தேவை? Retail shop-ஆ, wholesale business-ஆ?"
-
-Customer: "Textile shop"
-Assistant: "சரி சார், textile shop-க்கு billing கூட stock management-ம் தேவைப்படுமா? GST billing பயன்படுத்துறீங்களா?"
-
-Respond only with the words you want Bella to speak. Do not include labels like "Bella:".
-        `,
-        input: safeMessages,
-        max_output_tokens: 180
+        system_instruction: {
+          parts: [{ text: systemPrompt }]
+        },
+        contents,
+        generationConfig: {
+          temperature: 0.7,
+          responseMimeType: "application/json"
+        }
       })
     });
 
     const data = await response.json();
 
     if (!response.ok) {
-      console.error("OpenAI API error:", data);
-      return res.status(response.status).json({
-        error: data.error?.message || "AI response could not be generated."
+      console.error("Gemini error:", data);
+
+      return res.status(502).json({
+        error: data?.error?.message || "Gemini API request failed."
       });
     }
 
-    let reply = "";
+    const raw =
+      data?.candidates?.[0]?.content?.parts
+        ?.map(part => part.text || "")
+        .join("") || "";
 
-    if (Array.isArray(data.output)) {
-      for (const item of data.output) {
-        if (item.type === "message" && Array.isArray(item.content)) {
-          for (const part of item.content) {
-            if (part.type === "output_text" && part.text) {
-              reply += part.text;
-            }
-          }
-        }
-      }
-    }
-
-    reply = reply.trim();
-
-    if (!reply) {
-      return res.status(500).json({
-        error: "AI returned an empty reply."
+    if (!raw) {
+      return res.status(502).json({
+        error: "Gemini returned empty response."
       });
     }
 
-    return res.status(200).json({ reply });
+    let result;
+
+    try {
+      result = JSON.parse(raw);
+    } catch {
+      const cleaned = raw
+        .replace(/^```json\s*/i, "")
+        .replace(/^```\s*/i, "")
+        .replace(/\s*```$/i, "")
+        .trim();
+
+      result = JSON.parse(cleaned);
+    }
+
+    const oldMemory = memory || {};
+    const newMemory = result.memory || {};
+
+    const safeMemory = {
+      industry:
+        String(newMemory.industry || oldMemory.industry || ""),
+
+      requirements:
+        Array.isArray(newMemory.requirements)
+          ? newMemory.requirements.map(String)
+          : Array.isArray(oldMemory.requirements)
+            ? oldMemory.requirements.map(String)
+            : [],
+
+      problems:
+        Array.isArray(newMemory.problems)
+          ? newMemory.problems.map(String)
+          : Array.isArray(oldMemory.problems)
+            ? oldMemory.problems.map(String)
+            : [],
+
+      users:
+        String(newMemory.users || oldMemory.users || ""),
+
+      platform:
+        String(newMemory.platform || oldMemory.platform || ""),
+
+      currentSystem:
+        String(
+          newMemory.currentSystem ||
+          oldMemory.currentSystem ||
+          ""
+        ),
+
+      contact:
+        String(newMemory.contact || oldMemory.contact || ""),
+
+      email:
+        String(newMemory.email || oldMemory.email || ""),
+
+      leadClosed:
+        Boolean(
+          newMemory.leadClosed ||
+          oldMemory.leadClosed
+        )
+    };
+
+    return res.status(200).json({
+      reply: String(result.reply || ""),
+      memory: safeMemory,
+      nextQuestion: String(result.nextQuestion || ""),
+      shouldClose: Boolean(
+        result.shouldClose || safeMemory.leadClosed
+      )
+    });
 
   } catch (error) {
-    console.error("Chat backend error:", error);
+    console.error(error);
 
     return res.status(500).json({
-      error: "Chat service error: " + error.message
+      error: error?.message || "Unexpected server error."
     });
   }
 }
