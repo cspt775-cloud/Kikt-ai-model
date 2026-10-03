@@ -538,151 +538,102 @@ function speakText(text) {
 
 async function sendMessage(rawText) {
 
-  const text =
-    String(rawText || "").trim();
+  const text = String(rawText || "").trim();
 
   if (!text || !state.running)
     return;
 
-
-  addMessage(
-    "user",
-    text
-  );
-
-  addHistory(
-    "user",
-    text
-  );
-
+  addMessage("user", text);
+  addHistory("user", text);
   input.value = "";
 
-  typing.style.display =
-    "block";
-
+  typing.style.display = "block";
   sendBtn.disabled = true;
-
   micSendBtn.disabled = true;
-
 
   try {
 
-    const response =
-      await fetch(
-        "/api/chat",
-        {
+    const response = await fetch("/api/chat", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        message: text,
+        history: state.history,
+        memory: state.memory
+      })
+    });
 
-          method: "POST",
+    // Read as text first so even a Vercel/HTML/plain-text error is visible.
+    const rawResponse = await response.text();
 
-          headers: {
-            "Content-Type":
-              "application/json"
-          },
+    let data = {};
 
-          body: JSON.stringify({
-
-            message: text,
-
-            history:
-              state.history,
-
-            memory:
-              state.memory
-
-          })
-
-        }
+    try {
+      data = rawResponse ? JSON.parse(rawResponse) : {};
+    } catch (parseError) {
+      throw new Error(
+        "Server returned non-JSON response (HTTP " +
+        response.status + "): " +
+        rawResponse.slice(0, 500)
       );
-
-
-    const data =
-      await response.json();
-
+    }
 
     if (!response.ok) {
 
+      const details = data.details
+        ? JSON.stringify(data.details)
+        : "";
+
       throw new Error(
-        data.error ||
-        "AI request failed"
+        (data.error || "AI request failed") +
+        " | HTTP " +
+        response.status +
+        (details ? " | " + details : "")
       );
-
     }
-
 
     if (data.memory) {
-
       state.memory = {
-
         ...state.memory,
-
         ...data.memory
-
       };
-
     }
 
+    const reply = String(data.reply || "").trim();
 
-    const reply =
-      String(
-        data.reply || ""
-      ).trim();
-
-
-    if (reply) {
-
-      addMessage(
-        "assistant",
-        reply
+    if (!reply) {
+      throw new Error(
+        "API returned success but reply is empty"
       );
-
-      addHistory(
-        "assistant",
-        reply
-      );
-
-      speakText(reply);
-
     }
 
-
+    addMessage("assistant", reply);
+    addHistory("assistant", reply);
+    speakText(reply);
     updateMemoryBox();
-
 
   } catch (error) {
 
-    console.error(error);
+    console.error("KIKT /api/chat ERROR:", error);
 
+    // TEMPORARY DEBUG MESSAGE: this exposes the real backend error.
     const errorMessage =
-      "Sorry sir, AI connection-la temporary problem irukku. Konjam try pannunga.";
+      "AI ERROR: " +
+      (error?.message || "Unknown error");
 
-    addMessage(
-      "assistant",
-      errorMessage
-    );
-
-    addHistory(
-      "assistant",
-      errorMessage
-    );
-
-    speakText(
-      errorMessage
-    );
+    addMessage("assistant", errorMessage);
+    addHistory("assistant", errorMessage);
 
   } finally {
 
-    typing.style.display =
-      "none";
-
-    sendBtn.disabled =
-      false;
-
-    micSendBtn.disabled =
-      false;
-
+    typing.style.display = "none";
+    sendBtn.disabled = false;
+    micSendBtn.disabled = false;
   }
-
 }
+
 
 
 function startAI() {
