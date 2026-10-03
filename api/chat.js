@@ -23,31 +23,60 @@ export default async function handler(req, res) {
     }
 
     const url =
-      "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
+      "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent";
 
     const response = await fetch(url, {
       method: "POST",
+
       headers: {
         "Content-Type": "application/json",
         "x-goog-api-key": apiKey
       },
+
       body: JSON.stringify({
         contents: [
           {
             parts: [
               {
-                text: `You are a helpful sales assistant for KIKT Software Solutions.
+                text: `You are a helpful AI sales and support assistant for KIKT Software Solutions.
 
-Customer says:
+Customer message:
 ${message}
 
-Understand the requirement naturally and reply in simple Tamil/Tanglish.
-Do not invent prices.
-If they want software to manage leads and convert leads into sales, understand that requirement and ask one useful next question.`
+Understand what the customer means naturally.
+
+The customer may speak:
+- Tamil
+- Tanglish
+- English
+- mixed Tamil and English
+- speech-to-text with spelling mistakes
+
+Reply naturally in simple conversational Tamil/Tanglish unless the customer clearly prefers English.
+
+Do not ask questions that the customer has already answered.
+
+If the customer gives multiple requirements in one message, understand all of them.
+
+If the customer says they want software to manage leads and convert leads into sales, understand this as a lead management + sales follow-up requirement.
+
+Ask only ONE useful next question when more information is needed.
+
+Do not invent exact prices.
+
+Do not repeatedly ask for the industry if the requirement itself already gives enough context.
+
+Be natural like a real software sales executive, not like a form.
+
+Keep the response short and conversational so it can be spoken by voice AI.`
               }
             ]
           }
-        ]
+        ],
+
+        generationConfig: {
+          maxOutputTokens: 300
+        }
       })
     });
 
@@ -72,7 +101,7 @@ If they want software to manage leads and convert leads into sales, understand t
     }
 
     return res.status(200).json({
-      reply: reply
+      reply: reply.trim()
     });
 
   } catch (error) {
