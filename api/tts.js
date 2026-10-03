@@ -13,9 +13,9 @@ module.exports = async function handler(req, res) {
     });
   }
 
-  const text = req.body?.text;
+  const text = String(req.body?.text || "").trim();
 
-  if (typeof text !== "string" || !text.trim()) {
+  if (!text) {
     return res.status(400).json({
       error: "Text is required"
     });
@@ -25,7 +25,7 @@ module.exports = async function handler(req, res) {
 
   try {
     const response = await fetch(
-      `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`,
+      `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}?output_format=mp3_44100_128`,
       {
         method: "POST",
 
@@ -36,33 +36,24 @@ module.exports = async function handler(req, res) {
         },
 
         body: JSON.stringify({
-          text: text.trim(),
-
-          model_id: "eleven_multilingual_v2",
-
-          voice_settings: {
-            stability: 0.45,
-            similarity_boost: 0.8,
-            style: 0.2,
-            use_speaker_boost: true
-          }
+          text: text,
+          model_id: "eleven_multilingual_v2"
         })
       }
     );
 
     if (!response.ok) {
-      const errorText = await response.text();
+      const errorBody = await response.text();
 
-      console.error(
-        "ELEVENLABS ERROR:",
-        response.status,
-        errorText
-      );
+      console.error("ELEVENLABS ERROR:", {
+        status: response.status,
+        body: errorBody
+      });
 
       return res.status(502).json({
-        error: "ElevenLabs voice generation failed",
-        status: response.status,
-        details: errorText
+        error: "ElevenLabs rejected the request",
+        providerStatus: response.status,
+        providerError: errorBody
       });
     }
 
@@ -76,33 +67,19 @@ module.exports = async function handler(req, res) {
       });
     }
 
-    res.setHeader(
-      "Content-Type",
-      "audio/mpeg"
-    );
-
-    res.setHeader(
-      "Content-Length",
-      audioBuffer.length
-    );
-
-    res.setHeader(
-      "Cache-Control",
-      "no-store"
-    );
+    res.setHeader("Content-Type", "audio/mpeg");
+    res.setHeader("Content-Length", audioBuffer.length);
+    res.setHeader("Cache-Control", "no-store");
 
     return res.status(200).send(audioBuffer);
 
   } catch (error) {
 
-    console.error(
-      "TTS SERVER ERROR:",
-      error
-    );
+    console.error("TTS SERVER ERROR:", error);
 
     return res.status(500).json({
       error: "TTS server error",
-      details: error.message
+      message: error.message
     });
   }
 };
