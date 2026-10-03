@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -131,7 +132,9 @@ input {
     Status: Ready
   </div>
 
-  <div id="chat">KIKT AI: வணக்கம் சார்! KIKT Software Solutions-ல இருந்து பேசுறேன். உங்களுக்கு என்ன மாதிரி software தேவைப்படுது?</div>
+  <div id="chat">
+KIKT AI: வணக்கம் சார்! KIKT Software Solutions-ல இருந்து பேசுறேன். உங்களுக்கு என்ன மாதிரி software தேவைப்படுது?
+  </div>
 
   <input
     id="message"
@@ -150,6 +153,7 @@ input {
 </div>
 
 <script>
+
 const chat = document.getElementById("chat");
 const statusBox = document.getElementById("status");
 const messageBox = document.getElementById("message");
@@ -161,20 +165,49 @@ let recognition = null;
 let isStopped = false;
 let isThinking = false;
 
-/* Conversation memory for this browser session */
-let conversation = [
-  {
-    role: "assistant",
-    content: "வணக்கம் சார்! KIKT Software Solutions-ல இருந்து பேசுறேன். உங்களுக்கு என்ன மாதிரி software தேவைப்படுது?"
-  }
-];
+
+/* =========================
+   CONVERSATION MEMORY
+========================= */
+
+let conversation = [];
+
+let userInfo = {
+  software: "",
+  business: "",
+  features: [],
+  users: "",
+  platform: ""
+};
+
+
+/* =========================
+   INITIAL GREETING
+========================= */
+
+const greeting =
+"வணக்கம் சார்! KIKT Software Solutions-ல இருந்து பேசுறேன். உங்களுக்கு என்ன மாதிரி software தேவைப்படுது?";
+
+
+/* =========================
+   CHAT DISPLAY
+========================= */
 
 function addMessage(name, text) {
-  chat.textContent += "\n\n" + name + ": " + text;
+
+  chat.textContent +=
+    "\n\n" + name + ": " + text;
+
   chat.scrollTop = chat.scrollHeight;
 }
 
+
+/* =========================
+   AUDIO CLEANUP
+========================= */
+
 function cleanupAudio() {
+
   if (currentAudioUrl) {
     URL.revokeObjectURL(currentAudioUrl);
   }
@@ -183,7 +216,9 @@ function cleanupAudio() {
   currentAudioUrl = null;
 }
 
+
 function stopCurrentAudio() {
+
   if (currentAudio) {
     currentAudio.pause();
     currentAudio.currentTime = 0;
@@ -192,226 +227,912 @@ function stopCurrentAudio() {
   cleanupAudio();
 }
 
-/* BELLA VOICE */
+
+/* =========================
+   BELLA VOICE
+========================= */
+
 async function speak(text) {
+
   stopCurrentAudio();
+
   isStopped = false;
 
-  statusBox.textContent = "Bella voice generating...";
+  statusBox.textContent =
+    "Bella voice generating...";
 
   try {
+
     const response = await fetch("/api/tts", {
+
       method: "POST",
+
       headers: {
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({ text })
+
+      body: JSON.stringify({
+        text: text
+      })
+
     });
 
+
     if (!response.ok) {
-      let errorMessage = "Voice generation failed";
+
+      let errorMessage =
+        "Voice generation failed";
 
       try {
-        const errorData = await response.json();
+
+        const errorData =
+          await response.json();
+
         if (errorData.error) {
-          errorMessage = errorData.error;
+          errorMessage =
+            errorData.error;
         }
+
       } catch (e) {}
 
       throw new Error(errorMessage);
     }
 
-    const audioBlob = await response.blob();
 
-    if (isStopped) return;
+    const audioBlob =
+      await response.blob();
 
-    currentAudioUrl = URL.createObjectURL(audioBlob);
-    currentAudio = new Audio(currentAudioUrl);
+
+    if (isStopped) {
+      return;
+    }
+
+
+    currentAudioUrl =
+      URL.createObjectURL(audioBlob);
+
+    currentAudio =
+      new Audio(currentAudioUrl);
+
 
     currentAudio.onended = () => {
+
       cleanupAudio();
+
       if (!isStopped) {
-        statusBox.textContent = "Bella voice finished. You can reply.";
+
+        statusBox.textContent =
+          "Bella voice finished. You can reply.";
+
       }
+
     };
 
+
     currentAudio.onerror = () => {
+
       cleanupAudio();
-      statusBox.textContent = "Audio playback failed.";
+
+      statusBox.textContent =
+        "Audio playback failed.";
+
     };
+
 
     await currentAudio.play();
 
-    statusBox.textContent = "Bella is speaking...";
+
+    statusBox.textContent =
+      "Bella is speaking...";
+
 
   } catch (error) {
+
     console.error(error);
-    statusBox.textContent = "Bella voice error: " + error.message;
+
+    statusBox.textContent =
+      "Bella voice error: " +
+      error.message;
+
   }
+
 }
 
-/* START / RESET CONVERSATION */
+
+/* =========================
+   START AI
+========================= */
+
 function startAI() {
+
   stopCurrentAudio();
+
   isStopped = false;
 
-  conversation = [
-    {
-      role: "assistant",
-      content: "வணக்கம் சார்! KIKT Software Solutions-ல இருந்து பேசுறேன். உங்களுக்கு என்ன மாதிரி software தேவைப்படுது?"
-    }
-  ];
+  conversation = [];
 
-  chat.textContent = "KIKT AI: " + conversation[0].content;
+  userInfo = {
+    software: "",
+    business: "",
+    features: [],
+    users: "",
+    platform: ""
+  };
 
-  speak(conversation[0].content);
+
+  chat.textContent =
+    "KIKT AI: " + greeting;
+
+
+  conversation.push({
+    role: "assistant",
+    content: greeting
+  });
+
+
+  speak(greeting);
+
 }
 
-/* REAL AI CHAT */
+
+/* =========================
+   NORMALIZE TEXT
+========================= */
+
+function normalizeText(text) {
+
+  return text
+    .toLowerCase()
+    .replace(/[.,!?]/g, "")
+    .trim();
+
+}
+
+
+/* =========================
+   FIND SOFTWARE
+========================= */
+
+function detectSoftware(text) {
+
+  const t = normalizeText(text);
+
+
+  if (
+    t.includes("billing") ||
+    t.includes("bill") ||
+    t.includes("invoice") ||
+    t.includes("பில்லிங்") ||
+    t.includes("பில்")
+  ) {
+
+    return "billing";
+
+  }
+
+
+  if (
+    t.includes("payroll") ||
+    t.includes("salary") ||
+    t.includes("employee salary") ||
+    t.includes("சம்பளம்")
+  ) {
+
+    return "payroll";
+
+  }
+
+
+  if (
+    t.includes("inventory") ||
+    t.includes("stock") ||
+    t.includes("ஸ்டாக்") ||
+    t.includes("inventory software")
+  ) {
+
+    return "inventory";
+
+  }
+
+
+  if (
+    t.includes("school") ||
+    t.includes("college") ||
+    t.includes("education")
+  ) {
+
+    return "education";
+
+  }
+
+
+  if (
+    t.includes("hospital") ||
+    t.includes("clinic") ||
+    t.includes("medical")
+  ) {
+
+    return "hospital";
+
+  }
+
+
+  if (
+    t.includes("website") ||
+    t.includes("web site")
+  ) {
+
+    return "website";
+
+  }
+
+
+  if (
+    t.includes("app") ||
+    t.includes("mobile application") ||
+    t.includes("mobile app")
+  ) {
+
+    return "mobile_app";
+
+  }
+
+
+  return "";
+
+}
+
+
+/* =========================
+   BUSINESS DETECTION
+========================= */
+
+function detectBusiness(text) {
+
+  const t = normalizeText(text);
+
+
+  if (
+    t.includes("supermarket") ||
+    t.includes("super market")
+  ) {
+
+    return "supermarket";
+
+  }
+
+
+  if (
+    t.includes("shop") ||
+    t.includes("store") ||
+    t.includes("retail")
+  ) {
+
+    return "shop";
+
+  }
+
+
+  if (
+    t.includes("textile") ||
+    t.includes("cloth") ||
+    t.includes("garment")
+  ) {
+
+    return "textile";
+
+  }
+
+
+  if (
+    t.includes("hotel") ||
+    t.includes("restaurant") ||
+    t.includes("bakery")
+  ) {
+
+    return "food";
+
+  }
+
+
+  if (
+    t.includes("hospital") ||
+    t.includes("clinic")
+  ) {
+
+    return "medical";
+
+  }
+
+
+  return "";
+
+}
+
+
+/* =========================
+   FEATURES DETECTION
+========================= */
+
+function detectFeatures(text) {
+
+  const t = normalizeText(text);
+
+  let features = [];
+
+
+  if (
+    t.includes("stock") ||
+    t.includes("inventory") ||
+    t.includes("ஸ்டாக்")
+  ) {
+
+    features.push("stock management");
+
+  }
+
+
+  if (
+    t.includes("gst") ||
+    t.includes("tax")
+  ) {
+
+    features.push("GST billing");
+
+  }
+
+
+  if (
+    t.includes("barcode") ||
+    t.includes("bar code")
+  ) {
+
+    features.push("barcode");
+
+  }
+
+
+  if (
+    t.includes("customer") ||
+    t.includes("customer management")
+  ) {
+
+    features.push("customer management");
+
+  }
+
+
+  if (
+    t.includes("report") ||
+    t.includes("reports")
+  ) {
+
+    features.push("reports");
+
+  }
+
+
+  if (
+    t.includes("mobile") ||
+    t.includes("phone")
+  ) {
+
+    features.push("mobile access");
+
+  }
+
+
+  return features;
+
+}
+
+
+/* =========================
+   SMART REPLY ENGINE
+========================= */
+
+function getSmartReply(text) {
+
+  const t = normalizeText(text);
+
+
+  /* Detect information */
+
+  const detectedSoftware =
+    detectSoftware(text);
+
+  const detectedBusiness =
+    detectBusiness(text);
+
+  const detectedFeatures =
+    detectFeatures(text);
+
+
+  if (detectedSoftware) {
+
+    userInfo.software =
+      detectedSoftware;
+
+  }
+
+
+  if (detectedBusiness) {
+
+    userInfo.business =
+      detectedBusiness;
+
+  }
+
+
+  if (detectedFeatures.length > 0) {
+
+    userInfo.features = [
+      ...new Set([
+        ...userInfo.features,
+        ...detectedFeatures
+      ])
+    ];
+
+  }
+
+
+  /* =========================
+     GREETING
+  ========================= */
+
+  if (
+    t === "hi" ||
+    t === "hello" ||
+    t === "hai" ||
+    t.includes("vanakkam") ||
+    t.includes("வணக்கம்")
+  ) {
+
+    return "வணக்கம் சார் 😊 சொல்லுங்க. உங்களுக்கு என்ன மாதிரி software தேவைப்படுது?";
+
+  }
+
+
+  /* =========================
+     BILLING
+  ========================= */
+
+  if (userInfo.software === "billing") {
+
+    if (!userInfo.business) {
+
+      return "Sure sir 👍 Billing software setup pannalaam. Unga business enna type sir — shop, supermarket, wholesale, textile, illa vera business-aa?";
+
+    }
+
+
+    if (
+      userInfo.features.length === 0
+    ) {
+
+      return "Okay sir 👍 " +
+        userInfo.business +
+        " business-ku billing software venum. Billing mattum pothuma sir, illa stock management, GST, barcode, reports madhiri features-um venuma?";
+
+    }
+
+
+    if (
+      userInfo.features.length > 0 &&
+      !userInfo.platform
+    ) {
+
+      userInfo.platform =
+        "not_selected";
+
+      return "Okay sir 👍 Billing + " +
+        userInfo.features.join(", ") +
+        " requirement note panniten. Software computer-la mattum use panna poringala, illa mobile-laum access venuma?";
+
+    }
+
+
+    return "Perfect sir 👍 Unga requirement clear-ah note panniten — " +
+      "billing software with " +
+      userInfo.features.join(", ") +
+      ". Unga business-ku suitable setup pathi KIKT team detail-ah explain pannalaam. Unga contact details share pannunga sir.";
+
+  }
+
+
+  /* =========================
+     PAYROLL
+  ========================= */
+
+  if (userInfo.software === "payroll") {
+
+    return "Sure sir 👍 Payroll software setup pannalaam. Employee salary calculation, attendance, payslip, deductions madhiri features venuma? Unga company-la approximately evlo employees irukanga?";
+
+  }
+
+
+  /* =========================
+     INVENTORY
+  ========================= */
+
+  if (userInfo.software === "inventory") {
+
+    return "Sure sir 👍 Inventory management software venum. Stock in/out, purchase, sales, low-stock alert, reports madhiri features venuma? Unga business type enna sir?";
+
+  }
+
+
+  /* =========================
+     WEBSITE
+  ========================= */
+
+  if (userInfo.software === "website") {
+
+    return "Sure sir 👍 Website develop pannalaam. Unga business/company-ku website venuma, illa online sales / e-commerce website venuma?";
+
+  }
+
+
+  /* =========================
+     MOBILE APP
+  ========================= */
+
+  if (userInfo.software === "mobile_app") {
+
+    return "Sure sir 👍 Mobile app develop pannalaam. Android app mattuma, illa Android + iPhone rendu platform-um venuma? App-la main-a enna functionality venum sir?";
+
+  }
+
+
+  /* =========================
+     EDUCATION
+  ========================= */
+
+  if (userInfo.software === "education") {
+
+    return "Sure sir 👍 Education management software develop pannalaam. Student management, fees, attendance, exams, staff management madhiri features venuma?";
+
+  }
+
+
+  /* =========================
+     HOSPITAL
+  ========================= */
+
+  if (userInfo.software === "hospital") {
+
+    return "Sure sir 👍 Hospital / clinic management software setup pannalaam. Patient records, appointment, billing, pharmacy, reports madhiri features venuma?";
+
+  }
+
+
+  /* =========================
+     PRICE
+  ========================= */
+
+  if (
+    t.includes("price") ||
+    t.includes("cost") ||
+    t.includes("rate") ||
+    t.includes("amount") ||
+    t.includes("விலை") ||
+    t.includes("எவ்வளவு")
+  ) {
+
+    return "Sir software price requirement-ku depend aagum. Unga business type and required features therinja, KIKT team suitable package details share pannalaam. First unga business type sollunga sir.";
+
+  }
+
+
+  /* =========================
+     YES / OK
+  ========================= */
+
+  if (
+    t === "yes" ||
+    t === "yes sir" ||
+    t === "ok" ||
+    t === "okay" ||
+    t === "ama" ||
+    t === "aama" ||
+    t === "ஆமா"
+  ) {
+
+    return "Okay sir 👍 Next requirement sollunga. Unga business-ku exact-a enna functionality venum-nu one by one understand pannikkalaam.";
+
+  }
+
+
+  /* =========================
+     THANK YOU
+  ========================= */
+
+  if (
+    t.includes("thank") ||
+    t.includes("thanks") ||
+    t.includes("nandri") ||
+    t.includes("நன்றி")
+  ) {
+
+    return "You're welcome sir 😊 KIKT Software Solutions team unga requirement-ku suitable software solution provide panna help pannuvanga.";
+
+  }
+
+
+  /* =========================
+     DEFAULT
+  ========================= */
+
+  return "Okay sir 👍 Purinjukitten. Konjam detail-ah sollunga — unga business enna type, and software-la main-a enna functionality venum?";
+
+}
+
+
+/* =========================
+   SEND MESSAGE
+========================= */
+
 async function sendMessage() {
-  const text = messageBox.value.trim();
+
+  const text =
+    messageBox.value.trim();
+
 
   if (!text) {
-    statusBox.textContent = "Please type a message first.";
+
+    statusBox.textContent =
+      "Please type a message first.";
+
     return;
+
   }
+
 
   if (isThinking) {
-    statusBox.textContent = "Please wait, AI is preparing the reply...";
+
+    statusBox.textContent =
+      "Please wait, Bella is preparing the reply...";
+
     return;
+
   }
 
+
   messageBox.value = "";
-  addMessage("Customer", text);
+
+
+  addMessage(
+    "Customer",
+    text
+  );
+
 
   conversation.push({
     role: "user",
     content: text
   });
 
+
   isThinking = true;
+
   sendButton.disabled = true;
-  statusBox.textContent = "AI is understanding your requirement...";
+
+  statusBox.textContent =
+    "Understanding your requirement...";
+
 
   try {
-    const response = await fetch("/api/chat", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        messages: conversation
-      })
-    });
 
-    const data = await response.json();
+    /* FREE LOCAL AI-STYLE REPLY */
 
-    if (!response.ok) {
-      throw new Error(data.error || "AI chat request failed.");
-    }
+    const reply =
+      getSmartReply(text);
 
-    const reply = data.reply;
-
-    if (!reply) {
-      throw new Error("AI returned an empty reply.");
-    }
 
     conversation.push({
       role: "assistant",
       content: reply
     });
 
-    addMessage("KIKT AI", reply);
+
+    addMessage(
+      "KIKT AI",
+      reply
+    );
+
 
     await speak(reply);
 
+
   } catch (error) {
+
     console.error(error);
-    statusBox.textContent = "AI error: " + error.message;
-    addMessage("System", "AI reply failed. Please try again.");
+
+    statusBox.textContent =
+      "Reply error: " +
+      error.message;
+
+
   } finally {
+
     isThinking = false;
+
     sendButton.disabled = false;
+
   }
+
 }
 
-/* ENTER KEY TO SEND */
-messageBox.addEventListener("keydown", function(event) {
-  if (event.key === "Enter") {
-    event.preventDefault();
-    sendMessage();
-  }
-});
 
-/* MICROPHONE INPUT */
+/* =========================
+   ENTER KEY
+========================= */
+
+messageBox.addEventListener(
+  "keydown",
+  function(event) {
+
+    if (event.key === "Enter") {
+
+      event.preventDefault();
+
+      sendMessage();
+
+    }
+
+  }
+);
+
+
+/* =========================
+   MICROPHONE
+========================= */
+
 function startMic() {
+
   const SpeechRecognition =
     window.SpeechRecognition ||
     window.webkitSpeechRecognition;
 
+
   if (!SpeechRecognition) {
+
     statusBox.textContent =
       "Speech recognition not supported. Please type your message.";
+
     return;
+
   }
+
 
   if (isThinking) {
-    statusBox.textContent = "Please wait for the current AI reply.";
+
+    statusBox.textContent =
+      "Please wait for the current reply.";
+
     return;
+
   }
 
-  try {
-    recognition = new SpeechRecognition();
 
-    recognition.lang = "ta-IN";
-    recognition.continuous = false;
-    recognition.interimResults = false;
+  try {
+
+    recognition =
+      new SpeechRecognition();
+
+
+    recognition.lang =
+      "ta-IN";
+
+
+    recognition.continuous =
+      false;
+
+
+    recognition.interimResults =
+      false;
+
 
     recognition.onstart = () => {
-      statusBox.textContent = "Listening... Please speak.";
-    };
 
-    recognition.onresult = (event) => {
-      const spokenText = event.results[0][0].transcript;
-
-      messageBox.value = spokenText;
-      statusBox.textContent = "Heard: " + spokenText;
-
-      sendMessage();
-    };
-
-    recognition.onerror = (event) => {
       statusBox.textContent =
-        "Mic error: " + event.error +
-        ". You can type your message instead.";
+        "Listening... Please speak.";
+
     };
+
+
+    recognition.onresult =
+      (event) => {
+
+        const spokenText =
+          event.results[0][0].transcript;
+
+
+        messageBox.value =
+          spokenText;
+
+
+        statusBox.textContent =
+          "Heard: " +
+          spokenText;
+
+
+        sendMessage();
+
+      };
+
+
+    recognition.onerror =
+      (event) => {
+
+        statusBox.textContent =
+          "Mic error: " +
+          event.error +
+          ". You can type your message instead.";
+
+      };
+
 
     recognition.onend = () => {
+
       recognition = null;
+
     };
+
 
     recognition.start();
 
+
   } catch (error) {
+
     statusBox.textContent =
       "Mic could not start. Please type your message.";
+
   }
+
 }
 
-/* STOP VOICE */
+
+/* =========================
+   STOP VOICE
+========================= */
+
 function stopAI() {
+
   isStopped = true;
 
+
   if (recognition) {
+
     recognition.stop();
+
     recognition = null;
+
   }
+
 
   stopCurrentAudio();
 
-  statusBox.textContent = "Voice stopped.";
+
+  statusBox.textContent =
+    "Voice stopped.";
+
 }
+
+
+/* =========================
+   INITIAL CONVERSATION
+========================= */
+
+conversation = [
+  {
+    role: "assistant",
+    content: greeting
+  }
+];
+
 </script>
 
 </body>
 </html>
+```
