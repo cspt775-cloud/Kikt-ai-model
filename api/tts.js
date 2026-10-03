@@ -9,7 +9,7 @@ module.exports = async function handler(req, res) {
 
   if (!apiKey) {
     return res.status(500).json({
-      error: "ELEVENLABS_API_KEY is missing in Vercel"
+      error: "ELEVENLABS_API_KEY is missing"
     });
   }
 
@@ -74,7 +74,6 @@ module.exports = async function handler(req, res) {
     return res.status(200).send(audioBuffer);
 
   } catch (error) {
-
     console.error("TTS SERVER ERROR:", error);
 
     return res.status(500).json({
