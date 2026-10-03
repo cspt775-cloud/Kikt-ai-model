@@ -2,744 +2,1102 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>KIKT Software Solutions - AI Assistant</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>KIKT AI Sales & Support Assistant</title>
+
 <style>
-*{box-sizing:border-box}
-body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f4f7fb;color:#172033}
-.header{background:#111827;color:#fff;padding:16px 24px;display:flex;align-items:center;gap:12px}
-.logo{font-size:21px;font-weight:700}.subtitle{color:#c7ccd6;font-size:14px}
-.container{max-width:1050px;margin:28px auto;padding:0 15px}
-.chatBox{background:#fff;border-radius:16px;min-height:720px;box-shadow:0 8px 30px rgba(0,0,0,.08);display:flex;flex-direction:column;overflow:hidden}
-.controlBar{padding:14px 18px;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;gap:9px;background:#fafbfc;flex-wrap:wrap}
-.controlBtn{border:0;padding:10px 15px;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600}
-.startBtn{background:#111827;color:#fff}.stopBtn{background:#e5e7eb;color:#111827}
-.speakBtn{background:#eef2ff;color:#3730a3}.speakBtn.active{background:#111827;color:#fff}
-.micBtn{background:#ecfdf5;color:#047857}.micBtn.active{background:#047857;color:#fff}
-.status{margin-left:auto;font-size:13px;color:#6b7280}
-.messages{flex:1;padding:22px;overflow-y:auto;min-height:530px}
-.msg{display:flex;margin:13px 0}.msg.ai{justify-content:flex-start}.msg.user{justify-content:flex-end}
-.bubble{max-width:78%;padding:13px 16px;border-radius:15px;font-size:15px;line-height:1.55;white-space:pre-wrap}
-.ai .bubble{background:#eef2ff;color:#172033;border-bottom-left-radius:5px}
-.user .bubble{background:#111827;color:#fff;border-bottom-right-radius:5px}
-.bottomArea{padding:15px 18px 18px;border-top:1px solid #e5e7eb}
-.inputArea{display:flex;gap:10px}.inputArea input{flex:1;border:1px solid #d1d5db;border-radius:10px;padding:14px;font-size:15px;outline:0}
-.inputArea input:focus{border-color:#6b7280}.sendBtn{border:0;background:#111827;color:#fff;padding:0 23px;border-radius:10px;font-size:15px;cursor:pointer}
-.sendBtn:disabled{opacity:.5}.typing{font-size:12px;color:#9ca3af;min-height:18px;margin-top:7px}
-@media(max-width:700px){.header{flex-direction:column;align-items:flex-start}.status{width:100%;margin-left:0}.bubble{max-width:90%}}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  background: #f3f6fa;
+  color: #18212b;
+}
+
+.topbar {
+  background: #111827;
+  color: white;
+  padding: 18px 22px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.brand {
+  font-size: 19px;
+  font-weight: 700;
+}
+
+.sub {
+  font-size: 12px;
+  opacity: .7;
+  margin-top: 4px;
+}
+
+.status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #ef4444;
+}
+
+.dot.on {
+  background: #22c55e;
+}
+
+.wrap {
+  max-width: 980px;
+  margin: 25px auto;
+  padding: 0 15px;
+}
+
+.panel {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 8px 30px rgba(15,23,42,.08);
+  overflow: hidden;
+}
+
+.controls {
+  padding: 14px;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+}
+
+button {
+  border: 0;
+  border-radius: 9px;
+  padding: 10px 14px;
+  cursor: pointer;
+  font-weight: 600;
+  background: #e5e7eb;
+  color: #111827;
+}
+
+button.primary {
+  background: #111827;
+  color: white;
+}
+
+button.active {
+  background: #16a34a;
+  color: white;
+}
+
+button.danger {
+  background: #dc2626;
+  color: white;
+}
+
+button:disabled {
+  opacity: .45;
+  cursor: not-allowed;
+}
+
+#messages {
+  height: 480px;
+  overflow-y: auto;
+  padding: 20px;
+  background: #f8fafc;
+}
+
+.msg {
+  display: flex;
+  margin: 10px 0;
+}
+
+.msg.ai {
+  justify-content: flex-start;
+}
+
+.msg.user {
+  justify-content: flex-end;
+}
+
+.bubble {
+  max-width: 78%;
+  padding: 12px 15px;
+  border-radius: 14px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.ai .bubble {
+  background: white;
+  border: 1px solid #e5e7eb;
+}
+
+.user .bubble {
+  background: #111827;
+  color: white;
+}
+
+.typing {
+  font-size: 13px;
+  color: #64748b;
+  padding: 0 20px 10px;
+  display: none;
+}
+
+.composer {
+  display: flex;
+  gap: 9px;
+  padding: 15px;
+  border-top: 1px solid #e5e7eb;
+}
+
+#textInput {
+  flex: 1;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  padding: 12px;
+  font-size: 15px;
+  outline: none;
+}
+
+#textInput:focus {
+  border-color: #64748b;
+}
+
+.mic {
+  min-width: 52px;
+  font-size: 18px;
+}
+
+.note {
+  font-size: 12px;
+  color: #64748b;
+  padding: 0 15px 15px;
+}
+
+.memory {
+  margin-top: 12px;
+  background: white;
+  border-radius: 12px;
+  padding: 12px 15px;
+  font-size: 12px;
+  color: #475569;
+  display: none;
+}
+
 </style>
 </head>
+
 <body>
-<div class="header"><div class="logo">KIKT Software Solutions</div><div class="subtitle">AI Sales &amp; Support Assistant</div></div>
 
-<div class="container"><div class="chatBox">
-<div class="controlBar">
-<button id="startBtn" class="controlBtn startBtn">▶ Start AI</button>
-<button id="stopBtn" class="controlBtn stopBtn">■ Stop AI</button>
-<button id="speakBtn" class="controlBtn speakBtn active">🔊 Speak AI: ON</button>
-<button id="micBtn" class="controlBtn micBtn">🎙 Microphone OFF</button>
-<div id="status" class="status">AI Ready</div>
+<header class="topbar">
+
+  <div>
+    <div class="brand">
+      KIKT Software Solutions
+    </div>
+
+    <div class="sub">
+      AI Sales & Support Assistant
+    </div>
+  </div>
+
+  <div class="status">
+
+    <span id="statusDot" class="dot"></span>
+
+    <span id="statusText">
+      AI Stopped
+    </span>
+
+  </div>
+
+</header>
+
+
+<main class="wrap">
+
+<section class="panel">
+
+<div class="controls">
+
+<button id="startBtn" class="primary">
+Start AI
+</button>
+
+<button id="stopBtn" class="danger" disabled>
+Stop AI
+</button>
+
+<button id="speakBtn">
+Speak AI: ON
+</button>
+
+<button id="micBtn">
+Mic: OFF
+</button>
+
+<button id="clearBtn">
+Clear Chat
+</button>
+
 </div>
 
-<div id="messages" class="messages"></div>
 
-<div class="bottomArea">
-<div class="inputArea">
-<input id="userInput" type="text" placeholder="Type or speak your requirement..." autocomplete="off">
-<button id="sendBtn" class="sendBtn">Send</button>
+<div id="messages"></div>
+
+
+<div id="typing" class="typing">
+AI is thinking...
 </div>
-<div id="typing" class="typing"></div>
+
+
+<div class="composer">
+
+<input
+  id="textInput"
+  type="text"
+  placeholder="Type your message..."
+  autocomplete="off"
+/>
+
+<button
+  id="micSendBtn"
+  class="mic"
+>
+🎙️
+</button>
+
+<button
+  id="sendBtn"
+  class="primary"
+>
+Send
+</button>
+
 </div>
-</div></div>
+
+
+<div class="note">
+
+Voice input uses browser speech recognition.
+Gemini understands the transcript and conversation context.
+
+</div>
+
+</section>
+
+
+<div id="memoryBox" class="memory"></div>
+
+</main>
+
 
 <script>
-/* =========================================================
-   KIKT MASTER ENGINE
-   - No OpenAI API
-   - ElevenLabs remains /api/tts
-   - Context aware
-   - Voice correction
-   - Any order of answers
-   - No repeated completed questions
-========================================================= */
 
-const state={
-  started:false,
-  industry:"",
-  requirements:[],
-  problems:[],
-  users:"",
-  platform:"",
-  currentSystem:"",
-  contact:"",
-  email:"",
-  speakEnabled:true,
-  microphoneEnabled:false,
-  lastQuestionType:"",
-  leadClosed:false,
-  awaitingIndustry:false
+const state = {
+
+  running: false,
+
+  speaking: true,
+
+  mic: false,
+
+  history: [],
+
+  memory: {
+
+    industry: "",
+
+    requirements: [],
+
+    problems: [],
+
+    users: "",
+
+    platform: "",
+
+    currentSystem: "",
+
+    contact: "",
+
+    email: "",
+
+    leadClosed: false
+
+  },
+
+  recognition: null,
+
+  listening: false
+
 };
 
-const messagesEl=document.getElementById("messages");
-const inputEl=document.getElementById("userInput");
-const sendBtn=document.getElementById("sendBtn");
-const startBtn=document.getElementById("startBtn");
-const stopBtn=document.getElementById("stopBtn");
-const speakBtn=document.getElementById("speakBtn");
-const micBtn=document.getElementById("micBtn");
-const statusEl=document.getElementById("status");
-const typingEl=document.getElementById("typing");
 
-let currentAudio=null;
-let recognition=null;
-let speechSupported=false;
+const messages =
+  document.getElementById("messages");
 
-function normalize(s){
-  return String(s||"")
-    .toLowerCase()
-    .replace(/[.,!?;:()[\]{}]/g," ")
-    .replace(/\s+/g," ")
-    .trim();
+const input =
+  document.getElementById("textInput");
+
+const sendBtn =
+  document.getElementById("sendBtn");
+
+const startBtn =
+  document.getElementById("startBtn");
+
+const stopBtn =
+  document.getElementById("stopBtn");
+
+const speakBtn =
+  document.getElementById("speakBtn");
+
+const micBtn =
+  document.getElementById("micBtn");
+
+const micSendBtn =
+  document.getElementById("micSendBtn");
+
+const clearBtn =
+  document.getElementById("clearBtn");
+
+const typing =
+  document.getElementById("typing");
+
+const statusDot =
+  document.getElementById("statusDot");
+
+const statusText =
+  document.getElementById("statusText");
+
+const memoryBox =
+  document.getElementById("memoryBox");
+
+
+function addMessage(role, text) {
+
+  const row =
+    document.createElement("div");
+
+  row.className =
+    "msg " +
+    (role === "assistant" ? "ai" : "user");
+
+  const bubble =
+    document.createElement("div");
+
+  bubble.className = "bubble";
+
+  bubble.textContent = text;
+
+  row.appendChild(bubble);
+
+  messages.appendChild(row);
+
+  messages.scrollTop =
+    messages.scrollHeight;
 }
 
-function addUnique(arr,v){
-  if(v && !arr.includes(v)) arr.push(v);
-}
 
-function has(t,arr){return arr.some(x=>t.includes(x));}
+function addHistory(role, text) {
 
-function addMessage(text,type){
-  const row=document.createElement("div");
-  row.className="msg "+type;
-  const b=document.createElement("div");
-  b.className="bubble";
-  b.textContent=text;
-  row.appendChild(b);
-  messagesEl.appendChild(row);
-  messagesEl.scrollTop=messagesEl.scrollHeight;
-}
+  state.history.push({
+    role,
+    text
+  });
 
-function userSay(t){addMessage(t,"user");}
+  if (state.history.length > 30) {
 
-function aiSay(t){
-  addMessage(t,"ai");
-  if(state.speakEnabled && state.started) speak(t);
-}
+    state.history =
+      state.history.slice(-30);
 
-function stopAudio(){
-  if(currentAudio){
-    currentAudio.pause();
-    currentAudio.currentTime=0;
-    currentAudio=null;
   }
+
 }
 
-async function speak(text){
-  try{
-    stopAudio();
-    statusEl.textContent="🔊 AI Speaking...";
-    const r=await fetch("/api/tts",{
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({text})
-    });
-    if(!r.ok){statusEl.textContent="AI Ready";return;}
-    const blob=await r.blob();
-    const url=URL.createObjectURL(blob);
-    currentAudio=new Audio(url);
-    currentAudio.onended=()=>{
+
+function updateStatus() {
+
+  statusDot.classList.toggle(
+    "on",
+    state.running
+  );
+
+  statusText.textContent =
+    state.running
+      ? "AI Running"
+      : "AI Stopped";
+
+  startBtn.disabled =
+    state.running;
+
+  stopBtn.disabled =
+    !state.running;
+
+}
+
+
+function updateMemoryBox() {
+
+  const m = state.memory;
+
+  const requirements =
+    Array.isArray(m.requirements)
+      ? m.requirements.join(", ")
+      : "";
+
+  let text = "";
+
+  if (m.industry) {
+    text +=
+      "Industry: " +
+      m.industry +
+      " | ";
+  }
+
+  if (requirements) {
+    text +=
+      "Requirements: " +
+      requirements;
+  }
+
+  memoryBox.textContent =
+    text;
+
+  memoryBox.style.display =
+    text ? "block" : "none";
+
+}
+
+
+function speakText(text) {
+
+  if (!state.speaking || !text)
+    return;
+
+  fetch("/api/tts", {
+
+    method: "POST",
+
+    headers: {
+      "Content-Type":
+        "application/json"
+    },
+
+    body: JSON.stringify({
+      text: text
+    })
+
+  })
+
+  .then(async response => {
+
+    if (!response.ok)
+      throw new Error(
+        "TTS failed"
+      );
+
+    const blob =
+      await response.blob();
+
+    const url =
+      URL.createObjectURL(blob);
+
+    const audio =
+      new Audio(url);
+
+    audio.onended = () => {
       URL.revokeObjectURL(url);
-      currentAudio=null;
-      statusEl.textContent="AI Ready";
     };
-    await currentAudio.play();
-  }catch(e){
-    console.error(e);
-    statusEl.textContent="AI Ready";
-  }
+
+    audio.play().catch(() => {});
+
+  })
+
+  .catch(error => {
+
+    console.error(
+      "ElevenLabs TTS:",
+      error
+    );
+
+  });
+
 }
 
-/* ---------------- INDUSTRIES ---------------- */
 
-const industries=[
-  ["Construction",["construction","builder","building","civil","contractor","sub contractor","subcontractor","mason","site work","construction field"]],
-  ["Textile",["textile","spinning","spinning mill","cotton mill","cotton","yarn","loom","weaving","knitting","garment","fabric","dyeing","processing"]],
-  ["Manufacturing",["manufacturing","manufacturer","factory","production","assembly","industrial"]],
-  ["Retail",["retail","shop","store","supermarket","mart","retail shop"]],
-  ["Wholesale",["wholesale","wholesaler","distributor","distribution","dealer"]],
-  ["Restaurant",["restaurant","hotel","cafe","coffee shop","food business","food shop","kitchen"]],
-  ["Education",["school","college","education","student","tuition","institute","academy","training center"]],
-  ["Healthcare",["hospital","hospital software","clinic","doctor","patient","medical","pharmacy","healthcare","health care","hospital management"]],
-  ["Salon",["salon","saloon","beauty parlour","beauty parlor","barber","spa","hair salon"]],
-  ["Real Estate",["real estate","property","plot","plots","land","flat","apartment","villa"]],
-  ["Logistics",["logistics","transport","transportation","vehicle","truck","lorry","fleet","delivery","driver"]],
-  ["Service",["service center","service centre","repair","maintenance","service business"]]
-];
+async function sendMessage(rawText) {
 
-function detectIndustry(t){
-  for(const [name,words] of industries){
-    if(has(t,words)){
-      if(state.industry && state.industry!==name){
-        state.requirements=[];
-        state.problems=[];
-        state.users="";
-        state.platform="";
-        state.currentSystem="";
+  const text =
+    String(rawText || "").trim();
+
+  if (!text || !state.running)
+    return;
+
+
+  addMessage(
+    "user",
+    text
+  );
+
+  addHistory(
+    "user",
+    text
+  );
+
+  input.value = "";
+
+  typing.style.display =
+    "block";
+
+  sendBtn.disabled = true;
+
+  micSendBtn.disabled = true;
+
+
+  try {
+
+    const response =
+      await fetch(
+        "/api/chat",
+        {
+
+          method: "POST",
+
+          headers: {
+            "Content-Type":
+              "application/json"
+          },
+
+          body: JSON.stringify({
+
+            message: text,
+
+            history:
+              state.history,
+
+            memory:
+              state.memory
+
+          })
+
+        }
+      );
+
+
+    const data =
+      await response.json();
+
+
+    if (!response.ok) {
+
+      throw new Error(
+        data.error ||
+        "AI request failed"
+      );
+
+    }
+
+
+    if (data.memory) {
+
+      state.memory = {
+
+        ...state.memory,
+
+        ...data.memory
+
+      };
+
+    }
+
+
+    const reply =
+      String(
+        data.reply || ""
+      ).trim();
+
+
+    if (reply) {
+
+      addMessage(
+        "assistant",
+        reply
+      );
+
+      addHistory(
+        "assistant",
+        reply
+      );
+
+      speakText(reply);
+
+    }
+
+
+    updateMemoryBox();
+
+
+  } catch (error) {
+
+    console.error(error);
+
+    const errorMessage =
+      "Sorry sir, AI connection-la temporary problem irukku. Konjam try pannunga.";
+
+    addMessage(
+      "assistant",
+      errorMessage
+    );
+
+    addHistory(
+      "assistant",
+      errorMessage
+    );
+
+    speakText(
+      errorMessage
+    );
+
+  } finally {
+
+    typing.style.display =
+      "none";
+
+    sendBtn.disabled =
+      false;
+
+    micSendBtn.disabled =
+      false;
+
+  }
+
+}
+
+
+function startAI() {
+
+  state.running = true;
+
+  updateStatus();
+
+
+  if (state.history.length === 0) {
+
+    const greeting =
+      "Vanakkam sir! KIKT Software Solutions-la irundhu pesuren. Unga business-la enna process automate panna venum illa enna problem-ku software venum-nu sollunga.";
+
+    addMessage(
+      "assistant",
+      greeting
+    );
+
+    addHistory(
+      "assistant",
+      greeting
+    );
+
+    speakText(
+      greeting
+    );
+
+  }
+
+}
+
+
+function stopAI() {
+
+  state.running = false;
+
+  stopRecognition();
+
+  updateStatus();
+
+}
+
+
+function setupRecognition() {
+
+  const SpeechRecognition =
+    window.SpeechRecognition ||
+    window.webkitSpeechRecognition;
+
+
+  if (!SpeechRecognition) {
+
+    alert(
+      "Voice recognition support illa. Chrome browser use pannunga."
+    );
+
+    return null;
+
+  }
+
+
+  const recognition =
+    new SpeechRecognition();
+
+
+  recognition.lang =
+    "en-IN";
+
+  recognition.continuous =
+    false;
+
+  recognition.interimResults =
+    false;
+
+  recognition.maxAlternatives =
+    3;
+
+
+  recognition.onstart =
+    () => {
+
+      state.listening =
+        true;
+
+      micBtn.textContent =
+        "Mic: ON";
+
+      micBtn.classList.add(
+        "active"
+      );
+
+      micSendBtn.classList.add(
+        "active"
+      );
+
+    };
+
+
+  recognition.onend =
+    () => {
+
+      state.listening =
+        false;
+
+      micSendBtn.classList.remove(
+        "active"
+      );
+
+      if (!state.mic) {
+
+        micBtn.textContent =
+          "Mic: OFF";
+
+        micBtn.classList.remove(
+          "active"
+        );
+
       }
-      state.industry=name;
-      return true;
-    }
-  }
-  return false;
+
+    };
+
+
+  recognition.onerror =
+    event => {
+
+      console.error(
+        "Speech recognition:",
+        event.error
+      );
+
+      state.listening =
+        false;
+
+      micSendBtn.classList.remove(
+        "active"
+      );
+
+    };
+
+
+  recognition.onresult =
+    event => {
+
+      const result =
+        event.results[
+          event.results.length - 1
+        ][0].transcript;
+
+      input.value =
+        result;
+
+      if (
+        state.running &&
+        result.trim()
+      ) {
+
+        sendMessage(
+          result
+        );
+
+      }
+
+    };
+
+
+  return recognition;
+
 }
 
-/* ---------------- REQUIREMENTS ---------------- */
 
-const reqRules=[
- ["Labour Management",["labour management","labor management","labour","labor","worker management","workers","worker","daily wages","wage management"]],
- ["Attendance Management",["attendance","attendance management","present absent","absent","presence"]],
- ["Customer Management",["customer management","customer details","customer tracking","customer follow up","customer follow-up","customer followup"]],
- ["Daily Expense Tracking",["daily expense","daily expenses","expense management","expense tracking","expenses","expense","daily expence","expence"]],
- ["Site Management",["site management","site tracking","site details","multiple sites","site wise"]],
- ["Project Management",["project management","project tracking","project details","project"]],
- ["Material Management",["material management","material tracking","material stock","materials","material"]],
- ["Inventory Management",["inventory","inventory management","stock management","stock tracking","stock"]],
- ["Purchase Management",["purchase management","purchase","purchases"]],
- ["Sales Management",["sales management","sales tracking","sales"]],
- ["Billing & Invoicing",["billing","bill","invoice","invoicing","quotation","estimate"]],
- ["Payment Tracking",["payment tracking","payments","payment","collection","collections"]],
- ["Accounting",["accounting","accounts","ledger","profit","loss"]],
- ["Payroll",["payroll","salary management","salary","salaries"]],
- ["CRM / Lead Management",["crm","lead management","lead tracking","leads","follow up","follow-up","followup","enquiry","enquiries"]],
- ["HR Management",["hr management","human resource","employee management","staff management","employees"]],
- ["Production Management",["production management","production tracking","production"]],
- ["Quality Management",["quality management","quality checking","quality control","inspection"]],
- ["Machine Management",["machine management","machine tracking","machine maintenance"]],
- ["Order Management",["order management","order tracking","orders","customer orders"]],
- ["Barcode Management",["barcode","barcode system","barcode billing"]],
- ["Student Management",["student management","student details"]],
- ["Fees Management",["fees management","fee management","fee collection","fees"]],
- ["Exam Management",["exam management","examination","marks","result"]],
- ["Patient Management",["patient management","patient details","patient records"]],
- ["Appointment Management",["appointment management","appointments","appointment","booking","bookings"]],
- ["Pharmacy Management",["pharmacy management","pharmacy","medicine stock","medicine"]],
- ["Property Management",["property management","plot management","property"]],
- ["Site Visit Management",["site visit","site visits","visit tracking"]],
- ["Vehicle Management",["vehicle management","vehicle tracking","fleet management","fleet"]],
- ["Driver Management",["driver management","driver","drivers"]],
- ["Trip Management",["trip management","trip tracking","trips"]],
- ["Fuel Management",["fuel management","fuel tracking","diesel tracking","petrol tracking"]],
- ["Restaurant POS",["pos","restaurant billing","table management","kitchen management"]]
-];
+function startRecognition() {
 
-function detectRequirements(t){
-  for(const [label,words] of reqRules){
-    if(has(t,words)) addUnique(state.requirements,label);
-  }
-}
-
-/* ---------------- PROBLEMS ---------------- */
-
-function detectProblems(t){
-  if(has(t,["manual","paper","excel","excel sheet","not using software"]))
-    addUnique(state.problems,"Manual / Excel based process");
-  if(has(t,["wastage","waste","material wastage","consumption problem"]))
-    addUnique(state.problems,"Material wastage / consumption tracking");
-  if(has(t,["missing","stock missing","material missing"]))
-    addUnique(state.problems,"Material / stock missing");
-}
-
-/* ---------------- USERS ---------------- */
-
-function detectUsers(t){
-  let m=t.match(/(\d+)\s*(users?|staff|employees?|people|members?|persons?)/i);
-  if(m){state.users=m[1];return true;}
-  if(state.lastQuestionType==="users" && /^\d+$/.test(t)){
-    state.users=t;return true;
-  }
-  return false;
-}
-
-/* ---------------- PLATFORM ---------------- */
-
-/*
-   Voice can turn:
-   rendu -> rendu
-   rendu -> randu
-   rendu -> friend
-   rendu -> front
-   rendu platform -> and platform
-
-   ONLY correct these when the current question is PLATFORM.
-*/
-
-function platformVoiceCorrection(t){
-  let x=t;
-
-  if(state.lastQuestionType==="platform"){
-    x=x
-      .replace(/\bfriend\b/g,"rendu")
-      .replace(/\bfrnd\b/g,"rendu")
-      .replace(/\bfront\b/g,"rendu")
-      .replace(/\brand\b/g,"rendu")
-      .replace(/\brandu\b/g,"rendu")
-      .replace(/\brandu\b/g,"rendu")
-      .replace(/\band platform\b/g,"rendu platform")
-      .replace(/\band platforms\b/g,"rendu platforms");
-  }
-
-  return x;
-}
-
-function detectPlatform(raw){
-  let t=platformVoiceCorrection(raw);
-
-  if(
-    state.lastQuestionType==="platform" &&
-    (
-      has(t,[
-        "rendu","randu","rendu platform","rendu platforms",
-        "both","both platform","both platforms",
-        "two platform","two platforms",
-        "mobile and computer","mobile and desktop",
-        "mobile computer","mobile web","mobile plus computer",
-        "mobile plus web","mobile + computer","mobile + web",
-        "and platform","and platforms"
-      ])
-    )
-  ){
-    state.platform="Mobile + Computer";
-    return true;
-  }
-
-  if(has(t,["mobile and computer","mobile and desktop","mobile computer","mobile web","mobile plus computer","mobile plus web","mobile + computer","mobile + web"])){
-    state.platform="Mobile + Computer";
-    return true;
-  }
-
-  if(has(t,["mobile","android","smartphone","phone app","mobile app"])){
-    state.platform="Mobile";
-    return true;
-  }
-
-  if(has(t,["computer","desktop","laptop","web application","web app","browser"])){
-    state.platform="Computer / Web";
-    return true;
-  }
-
-  return false;
-}
-
-/* ---------------- CURRENT SYSTEM ---------------- */
-
-function detectCurrentSystem(t){
-  if(has(t,["manual","manual ah","manual la","paper","not using software"])){
-    state.currentSystem="Manual";return true;
-  }
-  if(has(t,["excel","excel sheet","spreadsheet"])){
-    state.currentSystem="Excel";return true;
-  }
-  if(has(t,["tally"])){
-    state.currentSystem="Tally";return true;
-  }
-  if(has(t,["existing software","already using software","already have software"])){
-    state.currentSystem="Existing Software";return true;
-  }
-  return false;
-}
-
-/* ---------------- CONTACT ---------------- */
-
-/*
-   For this demo, accept ANY 10 digit number.
-   This is why 1234567890 will close the lead.
-*/
-
-function detectContact(t){
-  const phone=t.match(/(?:\+91[\s-]?)?\d{10}/);
-  if(phone){
-    state.contact=phone[0];
-    return true;
-  }
-
-  const email=t.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i);
-  if(email){
-    state.email=email[0];
-    return true;
-  }
-
-  return false;
-}
-
-/* ---------------- PRICE / FAQ ---------------- */
-
-function isPriceQuestion(t){
-  return has(t,["price","cost","rate","how much","charges","pricing","budget","amount","evlo","evalo"]);
-}
-
-function answerFAQ(t){
-  if(has(t,["gst","gst billing"]))
-    return "Yes sir 👍 GST billing support include panna mudiyum. Invoice-la GST calculation, tax details and required reports customize panna mudiyum.";
-
-  if(has(t,["barcode"]))
-    return "Yes sir 👍 barcode system include panna mudiyum. Barcode scan panni item details, stock and billing manage panna mudiyum.";
-
-  if(has(t,["backup","data backup"]))
-    return "Yes sir 👍 database backup setup provide panna mudiyum. Exact backup method project requirement based on decide pannalaam.";
-
-  if(has(t,["security","secure","login"]))
-    return "Yes sir 👍 user login, role-based access and data protection requirements-ku based on implement panna mudiyum.";
-
-  if(has(t,["report","reports"]))
-    return "Yes sir 👍 daily, monthly, customer-wise, site-wise, stock-wise, expense-wise and other business reports customize panna mudiyum.";
-
-  if(has(t,["custom software","customize","customised","customized"]))
-    return "Yes sir 👍 KIKT-la unga business process-ku exactly match aagura custom software develop panna mudiyum.";
-
-  return "";
-}
-
-/* ---------------- INDUSTRY SUGGESTIONS ---------------- */
-
-function industrySuggestions(){
-  const map={
-    "Construction":["Labour Management","Site Management","Material Management","Daily Expense Tracking","Customer Management","Project Management"],
-    "Textile":["Production Management","Inventory Management","Order Management","Quality Management","Purchase Management","Customer Management"],
-    "Manufacturing":["Production Management","Inventory Management","Purchase Management","Machine Management","Quality Management","Sales Management"],
-    "Retail":["Billing & Invoicing","Inventory Management","Barcode Management","Purchase Management","Customer Management","Sales Management"],
-    "Wholesale":["Inventory Management","Purchase Management","Sales Management","Customer Management","Billing & Invoicing","Payment Tracking"],
-    "Restaurant":["Restaurant POS","Inventory Management","Billing & Invoicing","Customer Management","Order Management"],
-    "Education":["Student Management","Attendance Management","Fees Management","Exam Management","Staff Management","Reports"],
-    "Healthcare":["Patient Management","Appointment Management","Billing & Invoicing","Pharmacy Management","Doctor Management","Reports"],
-    "Salon":["Customer Management","Appointment Management","Staff Management","Billing & Invoicing","Inventory Management","Payment Tracking"],
-    "Real Estate":["Property Management","CRM / Lead Management","Customer Management","Site Visit Management","Payment Tracking","Follow-up Management"],
-    "Logistics":["Vehicle Management","Driver Management","Trip Management","Fuel Management","Expense Tracking","Customer Management"],
-    "Service":["Customer Management","Service / Job Tracking","Appointment Management","Billing & Invoicing","Inventory Management","Payment Tracking"]
-  };
-  return map[state.industry]||["Customer Management","Billing & Invoicing","Inventory Management","Expense Tracking","Employee Management","Reports"];
-}
-
-/* ---------------- NEXT STEP ---------------- */
-
-function nextQuestion(){
-  if(!state.industry){
-    state.lastQuestionType="industry";
-    return "Sure sir 👍 unga business endha industry / field-la irukku?";
-  }
-
-  if(state.requirements.length===0){
-    state.lastQuestionType="requirements";
-    const list=industrySuggestions();
-    return "Okay sir 👍 "+state.industry+" business-ku "+list.slice(0,4).join(", ")+" madhiri processes software-la manage panna mudiyum. Ungalukku mainly edhu venum sir?";
-  }
-
-  if(!state.users){
-    state.lastQuestionType="users";
-    return "Okay sir 👍 approximately evlo users software use panna poranga?";
-  }
-
-  if(!state.platform){
-    state.lastQuestionType="platform";
-    return "Software mobile-la use panna poringala, computer/web-la use panna poringala, illa rendu platform-um venuma sir?";
-  }
-
-  if(!state.currentSystem){
-    state.lastQuestionType="currentSystem";
-    return "Ippo indha process manual / Excel-la manage panreengala, illa already existing software use panreengala sir?";
-  }
-
-  if(!state.contact && !state.email){
-    state.lastQuestionType="contact";
-    return "Perfect sir 👍 requirement clear-ah understand panniten. Quotation / demo discussion-ku unga contact number share pannunga.";
-  }
-
-  return "";
-}
-
-/* ---------------- CLOSE ---------------- */
-
-function closeLead(){
-  state.leadClosed=true;
-
-  let text="Thank you sir 👍 "+(state.contact||state.email)+" contact details note panniten.";
-
-  if(state.industry) text+="\nIndustry: "+state.industry;
-  if(state.requirements.length) text+="\nRequirements: "+state.requirements.join(", ");
-  if(state.users) text+="\nUsers: "+state.users;
-  if(state.platform) text+="\nPlatform: "+state.platform;
-  if(state.currentSystem) text+="\nCurrent system: "+state.currentSystem;
-
-  text+="\n\nKIKT team unga requirement based on quotation / demo discussion-ku contact pannuvanga sir. 👍";
-  return text;
-}
-
-/* ---------------- MAIN ENGINE ---------------- */
-
-async function processMessage(raw){
-  let t=normalize(raw);
-  if(!t)return;
-
-  /* Extract EVERYTHING first */
-  const oldIndustry=state.industry;
-
-  detectIndustry(t);
-  detectRequirements(t);
-  detectProblems(t);
-  detectUsers(t);
-  detectPlatform(t);
-  detectCurrentSystem(t);
-  const gotContact=detectContact(t);
-
-  /* Contact ALWAYS gets highest priority.
-     This prevents the old repeated summary bug. */
-  if(gotContact || state.contact || state.email){
-    if(!state.leadClosed){
-      aiSay(closeLead());
-    }else{
-      aiSay("Yes sir 👍 unga contact details already note pannirukkom. Vera edhavadhu requirement / question irundha sollunga.");
-    }
+  if (!state.running)
     return;
+
+
+  if (!state.recognition) {
+
+    state.recognition =
+      setupRecognition();
+
   }
 
-  /* Price */
-  if(isPriceQuestion(t)){
-    let x="Sir, software cost exact-ah requirement based on quotation prepare pannitu sollanum. Modules, users, platform and customization based on cost vary aagum.";
-    if(state.requirements.length) x+="\n\nIppo note pannirukkura requirements: "+state.requirements.join(", ")+".";
-    if(state.users) x+="\nUsers: "+state.users+".";
-    if(state.platform) x+="\nPlatform: "+state.platform+".";
-    x+="\n\nContact number share pannina KIKT team quotation/demo discussion continue pannuvanga sir.";
-    state.lastQuestionType="contact";
-    aiSay(x);
+
+  if (
+    !state.recognition ||
+    state.listening
+  )
     return;
+
+
+  try {
+
+    state.recognition.start();
+
+  } catch (error) {
+
+    console.error(error);
+
   }
 
-  /* FAQ first */
-  const faq=answerFAQ(t);
-  if(faq){
-    aiSay(faq);
-    if(!state.leadClosed){
-      const next=nextQuestion();
-      if(next)setTimeout(()=>aiSay(next),500);
-    }
-    return;
-  }
-
-  /* Direct answer to current question */
-  if(state.lastQuestionType==="users" && state.users){
-    const next=nextQuestion();
-    aiSay("Okay sir 👍 "+state.users+" users-nu note panniten."+ (next?"\n\n"+next:""));
-    return;
-  }
-
-  if(state.lastQuestionType==="platform" && state.platform){
-    const next=nextQuestion();
-    aiSay("Perfect sir 👍 "+state.platform+" platform-nu note panniten."+ (next?"\n\n"+next:""));
-    return;
-  }
-
-  if(state.lastQuestionType==="currentSystem" && state.currentSystem){
-    const next=nextQuestion();
-    aiSay("Okay sir 👍 current system "+state.currentSystem+" nu note panniten."+ (next?"\n\n"+next:""));
-    return;
-  }
-
-  /* Industry only */
-  if(state.industry && state.requirements.length===0){
-    state.lastQuestionType="requirements";
-    const list=industrySuggestions();
-    aiSay("Okay sir 👍 "+state.industry+" software requirement-nu note panniten. "+list.slice(0,4).join(", ")+" madhiri modules available. Ungalukku mainly edhu venum sir?");
-    return;
-  }
-
-  /* Requirements found */
-  if(state.requirements.length>0){
-    let response="Yes sir 👍 ";
-    if(state.industry) response+=state.industry+" business requirement-nu note panniten. ";
-    response+="Neenga sonna "+state.requirements.join(", ")+" software-la manage panna mudiyum.";
-    if(state.problems.length) response+="\n"+state.problems.join(", ")+" problem-um software workflow-la handle panna mudiyum.";
-
-    const next=nextQuestion();
-    if(next)response+="\n\n"+next;
-    aiSay(response);
-    return;
-  }
-
-  aiSay(nextQuestion());
 }
 
-/* ---------------- SEND ---------------- */
 
-async function sendText(text){
-  if(!text)return;
-  userSay(text);
-  inputEl.value="";
-  sendBtn.disabled=true;
-  typingEl.textContent="AI is thinking...";
-  try{
-    await processMessage(text);
-  }catch(e){
-    console.error(e);
-    aiSay("Sorry sir, konjam technical issue. Requirement-a once more simple-ah sollunga.");
+function stopRecognition() {
+
+  if (
+    state.recognition &&
+    state.listening
+  ) {
+
+    try {
+
+      state.recognition.stop();
+
+    } catch (error) {}
+
   }
-  typingEl.textContent="";
-  sendBtn.disabled=false;
-  inputEl.focus();
+
+  state.listening =
+    false;
+
 }
 
-sendBtn.addEventListener("click",()=>{
-  const t=inputEl.value.trim();
-  if(t)sendText(t);
-});
 
-inputEl.addEventListener("keydown",e=>{
-  if(e.key==="Enter"){
-    e.preventDefault();
-    const t=inputEl.value.trim();
-    if(t)sendText(t);
+startBtn.addEventListener(
+  "click",
+  startAI
+);
+
+
+stopBtn.addEventListener(
+  "click",
+  stopAI
+);
+
+
+speakBtn.addEventListener(
+  "click",
+  () => {
+
+    state.speaking =
+      !state.speaking;
+
+    speakBtn.textContent =
+      "Speak AI: " +
+      (
+        state.speaking
+          ? "ON"
+          : "OFF"
+      );
+
+    speakBtn.classList.toggle(
+      "active",
+      state.speaking
+    );
+
   }
-});
+);
 
-/* ---------------- START / STOP ---------------- */
 
-startBtn.addEventListener("click",()=>{
-  if(state.started)return;
+micBtn.addEventListener(
+  "click",
+  () => {
 
-  state.started=true;
+    state.mic =
+      !state.mic;
 
-  aiSay("வணக்கம் sir! KIKT Software Solutions-ல இருந்து பேசுறேன். உங்க business எந்த field-la இருந்தாலும், உங்க process அல்லது problem-ஐ சொல்லுங்க. அதை based on software solution எப்படி customize பண்ணலாம் என்று நான் guide பண்றேன்.");
+    micBtn.textContent =
+      "Mic: " +
+      (
+        state.mic
+          ? "ON"
+          : "OFF"
+      );
 
-  statusEl.textContent="AI Ready";
-});
+    micBtn.classList.toggle(
+      "active",
+      state.mic
+    );
 
-stopBtn.addEventListener("click",()=>{
-  state.started=false;
-  stopAudio();
 
-  if(recognition && state.microphoneEnabled){
-    state.microphoneEnabled=false;
-    try{recognition.stop();}catch(e){}
-  }
+    if (state.mic) {
 
-  micBtn.textContent="🎙 Microphone OFF";
-  micBtn.classList.remove("active");
-  statusEl.textContent="AI Stopped";
-});
+      startRecognition();
 
-/* ---------------- SPEAK ---------------- */
+    } else {
 
-speakBtn.addEventListener("click",()=>{
-  state.speakEnabled=!state.speakEnabled;
+      stopRecognition();
 
-  if(state.speakEnabled){
-    speakBtn.textContent="🔊 Speak AI: ON";
-    speakBtn.classList.add("active");
-    statusEl.textContent="Voice enabled";
-  }else{
-    stopAudio();
-    speakBtn.textContent="🔇 Speak AI: OFF";
-    speakBtn.classList.remove("active");
-    statusEl.textContent="Voice disabled";
-  }
-});
-
-/* ---------------- MICROPHONE ---------------- */
-
-if("SpeechRecognition" in window || "webkitSpeechRecognition" in window){
-  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-  recognition=new SR();
-  speechSupported=true;
-
-  recognition.continuous=true;
-  recognition.interimResults=true;
-
-  /* en-IN is kept because user speaks Tanglish/English terms */
-  recognition.lang="en-IN";
-
-  recognition.onstart=()=>{
-    statusEl.textContent="🎙 Listening...";
-    micBtn.textContent="🎙 Microphone ON";
-    micBtn.classList.add("active");
-  };
-
-  recognition.onresult=event=>{
-    let finalText="";
-    let interim="";
-
-    for(let i=event.resultIndex;i<event.results.length;i++){
-      const tx=event.results[i][0].transcript;
-      if(event.results[i].isFinal) finalText+=tx+" ";
-      else interim+=tx;
     }
 
-    if(interim){
-      inputEl.value=interim;
-      typingEl.textContent="Listening: "+interim;
+  }
+);
+
+
+micSendBtn.addEventListener(
+  "click",
+  () => {
+
+    if (!state.running) {
+
+      alert(
+        "First Start AI click pannunga."
+      );
+
+      return;
+
     }
 
-    if(finalText.trim()){
-      const captured=finalText.trim();
-      inputEl.value=captured;
-      typingEl.textContent="Voice captured";
 
-      setTimeout(()=>{
-        if(captured)sendText(captured);
-      },300);
+    if (!state.recognition) {
+
+      state.recognition =
+        setupRecognition();
+
     }
-  };
 
-  recognition.onerror=event=>{
-    console.log("Speech error:",event.error);
 
-    if(event.error==="not-allowed"){
-      state.microphoneEnabled=false;
-      micBtn.textContent="🎙 Microphone OFF";
-      micBtn.classList.remove("active");
-      statusEl.textContent="Microphone permission denied";
+    if (state.listening) {
+
+      stopRecognition();
+
+    } else {
+
+      startRecognition();
+
     }
-  };
 
-  recognition.onend=()=>{
-    if(state.microphoneEnabled && state.started){
-      setTimeout(()=>{
-        try{recognition.start();}catch(e){}
-      },250);
-    }else{
-      micBtn.textContent="🎙 Microphone OFF";
-      micBtn.classList.remove("active");
+  }
+);
+
+
+sendBtn.addEventListener(
+  "click",
+  () => {
+
+    sendMessage(
+      input.value
+    );
+
+  }
+);
+
+
+input.addEventListener(
+  "keydown",
+  event => {
+
+    if (event.key === "Enter") {
+
+      event.preventDefault();
+
+      sendMessage(
+        input.value
+      );
+
     }
-  };
-}
 
-micBtn.addEventListener("click",()=>{
-  if(!speechSupported){
-    alert("Chrome browser use pannunga. Indha browser-la speech recognition support illa.");
-    return;
   }
+);
 
-  if(!state.started){
-    alert("First click Start AI.");
-    return;
+
+clearBtn.addEventListener(
+  "click",
+  () => {
+
+    stopRecognition();
+
+    state.history = [];
+
+    state.memory = {
+
+      industry: "",
+
+      requirements: [],
+
+      problems: [],
+
+      users: "",
+
+      platform: "",
+
+      currentSystem: "",
+
+      contact: "",
+
+      email: "",
+
+      leadClosed: false
+
+    };
+
+    messages.innerHTML = "";
+
+    updateMemoryBox();
+
+    if (state.running) {
+
+      startAI();
+
+    }
+
   }
+);
 
-  if(state.microphoneEnabled){
-    state.microphoneEnabled=false;
-    try{recognition.stop();}catch(e){}
-    micBtn.textContent="🎙 Microphone OFF";
-    micBtn.classList.remove("active");
-    statusEl.textContent="AI Ready";
-    return;
-  }
 
-  state.microphoneEnabled=true;
+speakBtn.classList.add(
+  "active"
+);
 
-  try{
-    recognition.start();
-  }catch(e){
-    console.log(e);
-  }
-});
+updateStatus();
 
-statusEl.textContent="AI Ready";
 </script>
+
 </body>
 </html>
