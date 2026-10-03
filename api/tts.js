@@ -8,8 +8,6 @@ module.exports = async function handler(req, res) {
   const apiKey = process.env.ELEVENLABS_API_KEY;
 
   if (!apiKey) {
-    console.error("ELEVENLABS_API_KEY is missing");
-
     return res.status(500).json({
       error: "ELEVENLABS_API_KEY is missing in Vercel"
     });
@@ -72,26 +70,35 @@ module.exports = async function handler(req, res) {
       await response.arrayBuffer()
     );
 
-    console.log(
-      "ElevenLabs audio generated:",
-      audioBuffer.length,
-      "bytes"
-    );
-
     if (!audioBuffer.length) {
       return res.status(502).json({
         error: "ElevenLabs returned empty audio"
       });
     }
 
-    res.setHeader("Content-Type", "audio/mpeg");
-    res.setHeader("Content-Length", audioBuffer.length);
-    res.setHeader("Cache-Control", "no-store");
+    res.setHeader(
+      "Content-Type",
+      "audio/mpeg"
+    );
+
+    res.setHeader(
+      "Content-Length",
+      audioBuffer.length
+    );
+
+    res.setHeader(
+      "Cache-Control",
+      "no-store"
+    );
 
     return res.status(200).send(audioBuffer);
 
   } catch (error) {
-    console.error("TTS SERVER ERROR:", error);
+
+    console.error(
+      "TTS SERVER ERROR:",
+      error
+    );
 
     return res.status(500).json({
       error: "TTS server error",
