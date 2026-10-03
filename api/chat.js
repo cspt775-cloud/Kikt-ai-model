@@ -1,121 +1,83 @@
 export default async function handler(req, res) {
-  if (req.method !== "POST") {
-    return res.status(405).json({
-      error: "Method not allowed"
-    });
-  }
-
-  const apiKey = process.env.GEMINI_API_KEY;
-
-  if (!apiKey) {
-    return res.status(500).json({
-      error: "GEMINI_API_KEY is missing in Vercel Environment Variables"
-    });
-  }
-
   try {
-    const body = req.body || {};
-    const message = body.message || "";
-
-    if (!message.trim()) {
-      return res.status(400).json({
-        error: "Message is empty"
+    if (req.method !== "POST") {
+      return res.status(405).json({
+        error: "POST only"
       });
     }
 
-    const prompt = `
-You are an AI sales assistant for KIKT Software Solutions.
+    const apiKey = process.env.GEMINI_API_KEY;
 
-Customer message:
+    if (!apiKey) {
+      return res.status(500).json({
+        error: "GEMINI_API_KEY missing"
+      });
+    }
+
+    const message = req.body?.message;
+
+    if (!message) {
+      return res.status(400).json({
+        error: "Message missing"
+      });
+    }
+
+    const url =
+      "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
+
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-goog-api-key": apiKey
+      },
+      body: JSON.stringify({
+        contents: [
+          {
+            parts: [
+              {
+                text: `You are a helpful sales assistant for KIKT Software Solutions.
+
+Customer says:
 ${message}
 
-Understand the customer's requirement naturally.
-
-Return ONLY valid JSON in this format:
-
-{
-  "reply": "natural Tamil/Tanglish reply",
-  "memory": {
-    "industry": "",
-    "requirements": [],
-    "problems": [],
-    "users": "",
-    "platform": "",
-    "currentSystem": "",
-    "contact": "",
-    "email": "",
-    "leadClosed": false
-  }
-}
-
-Do not invent pricing.
-If the customer says they need software to manage incoming leads and convert them into sales, understand that as a lead management / sales follow-up requirement.
-Ask the next useful question naturally.
-`;
-
-    const response = await fetch(
-      "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-goog-api-key": apiKey
-        },
-        body: JSON.stringify({
-          contents: [
-            {
-              role: "user",
-              parts: [
-                {
-                  text: prompt
-                }
-              ]
-            }
-          ],
-          generationConfig: {
-            temperature: 0.7,
-            responseMimeType: "application/json"
+Understand the requirement naturally and reply in simple Tamil/Tanglish.
+Do not invent prices.
+If they want software to manage leads and convert leads into sales, understand that requirement and ask one useful next question.`
+              }
+            ]
           }
-        })
-      }
-    );
+        ]
+      })
+    });
 
     const data = await response.json();
 
     if (!response.ok) {
       return res.status(500).json({
-        error: "Gemini API Error",
+        error: "Gemini Error",
         status: response.status,
         details: data
       });
     }
 
-    const text =
+    const reply =
       data?.candidates?.[0]?.content?.parts?.[0]?.text;
 
-    if (!text) {
+    if (!reply) {
       return res.status(500).json({
-        error: "Gemini returned no text",
+        error: "No Gemini reply",
         details: data
       });
     }
 
-    let result;
-
-    try {
-      result = JSON.parse(text);
-    } catch (e) {
-      return res.status(500).json({
-        error: "Gemini returned invalid JSON",
-        raw: text
-      });
-    }
-
-    return res.status(200).json(result);
+    return res.status(200).json({
+      reply: reply
+    });
 
   } catch (error) {
     return res.status(500).json({
-      error: "Server error",
+      error: "Server Error",
       message: error.message
     });
   }
