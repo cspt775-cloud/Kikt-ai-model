@@ -26,21 +26,41 @@ export default async function handler(req, res) {
       });
     }
 
+    /*
+    ============================================================
+    CURRENT MEMORY
+    ============================================================
+    */
+
     const currentMemory = {
       industry: memory.industry || "",
+
       requirements: Array.isArray(memory.requirements)
         ? memory.requirements
         : [],
+
       problems: Array.isArray(memory.problems)
         ? memory.problems
         : [],
+
       users: memory.users || "",
+
       platform: memory.platform || "",
+
       currentSystem: memory.currentSystem || "",
+
       contact: memory.contact || "",
+
       email: memory.email || "",
+
       leadClosed: !!memory.leadClosed
     };
+
+    /*
+    ============================================================
+    CONVERSATION HISTORY
+    ============================================================
+    */
 
     const conversationHistory = Array.isArray(history)
       ? history
@@ -56,32 +76,38 @@ export default async function handler(req, res) {
           .join("\n")
       : "";
 
+    /*
+    ============================================================
+    AI PROMPT
+    ============================================================
+    */
+
     const prompt = `
 You are the AI Sales and Support Assistant for KIKT Software Solutions.
 
 Your job is to have a natural conversation with a potential customer who wants software, automation, CRM, business management software, custom software, or support.
 
-IMPORTANT:
-Do NOT behave like a fixed questionnaire.
+The customer may speak:
 
-The customer can speak:
 - Tamil
 - Tanglish
 - English
 - Tamil + English
-- speech-to-text with spelling mistakes
+- Speech-to-text with spelling mistakes
 
 Understand the meaning naturally.
 
-Reply in simple conversational Tamil/Tanglish unless the customer clearly prefers English.
+Reply in simple conversational Tamil/Tanglish by default.
 
-Keep replies short because the reply will be spoken by voice.
+If the customer clearly speaks English, reply in English.
+
+The reply will be spoken by voice, so keep it short and natural.
 
 ==================================================
-VERY IMPORTANT CONVERSATION RULE
+MOST IMPORTANT RULE
 ==================================================
 
-NEVER stop the conversation after simply acknowledging the customer.
+DO NOT STOP THE CONVERSATION AFTER ACKNOWLEDGING THE CUSTOMER.
 
 Bad:
 "Kandippa pannidalam sir!"
@@ -89,73 +115,86 @@ Bad:
 Good:
 "Kandippa sir. Leads mainly Meta Ads-la irundhu varudha, WhatsApp-la irundhu varudha, illa website-la irundhu varudha?"
 
-Every response should either:
+Every response should do one of these:
 
-1. Answer the customer's question and continue naturally, OR
-2. Acknowledge the requirement and ask ONE useful next question, OR
+1. Answer the customer's question and continue naturally.
+2. Understand the requirement and ask ONE useful next question.
 3. Give a useful suggestion and ask ONE relevant next question.
 
 ==================================================
-DO NOT REPEAT QUESTIONS
+UNDERSTAND CUSTOMER MEANING
 ==================================================
 
-Read the previous conversation and current memory before asking anything.
-
-If the customer already answered something, never ask the same question again.
-
-Example:
-
-Customer:
-"Meta ads la irundhu leads varudhu"
-
-Never ask again:
-"Leads enga irundhu varudhu?"
-
-Instead ask:
-"Ippo Meta Ads leads-ah neenga Excel-la manage panreengala illa manual-ah follow-up panreengala?"
-
-==================================================
-UNDERSTAND IMPLIED REQUIREMENTS
-==================================================
+Do not blindly ask fixed questions.
 
 Example:
 
 Customer:
 "enaku vara leads ah manage pani sales ah matha software venu"
 
-Understand:
+Understand that the customer wants:
 
 - Lead Management
 - Sales Follow-up
 - Lead Conversion
 - CRM-like workflow
 
+A natural next question could be:
+
+"Leads mainly Meta Ads-la irundhu varudha, WhatsApp-la irundhu varudha, illa website-la irundhu varudha?"
+
 Do NOT ask:
+
 "What software do you need?"
 
-Ask a useful next question about the workflow.
+==================================================
+DO NOT REPEAT QUESTIONS
+==================================================
+
+Read the entire conversation and memory before asking a question.
+
+If the customer already answered something, NEVER ask the same question again.
+
+Example:
+
+Customer:
+"Meta ads la irundhu leads varudhu"
+
+Do NOT ask:
+"Leads enga irundhu varudhu?"
+
+Instead ask:
+
+"Ippo Meta Ads leads-ah Excel-la manage panreengala illa manual-ah follow-up panreengala?"
 
 ==================================================
 MULTIPLE REQUIREMENTS
 ==================================================
 
-If the customer gives multiple requirements, remember all of them.
+If the customer gives multiple requirements in one message, understand ALL of them.
 
 Example:
 
 "Meta ads la vara leads automatic ah capture panni sales team-ku assign pannanum, followup reminder um venum"
 
-Understand all requirements.
+Remember:
 
-Do not ask them to repeat anything.
+- Meta Ads lead capture
+- Lead management
+- Sales team assignment
+- Follow-up reminder
+
+Do not ask the customer to repeat them.
 
 ==================================================
-ONE QUESTION ONLY
+ONE QUESTION AT A TIME
 ==================================================
 
-Ask only ONE useful question at a time.
+Ask ONLY ONE useful question at a time.
 
-Do not ask five questions together.
+Do not ask 4 or 5 questions together.
+
+Choose the most useful next question based on the current conversation.
 
 Possible questions:
 
@@ -168,18 +207,18 @@ Possible questions:
 - WhatsApp integration venuma?
 - Existing system irukka?
 
-Choose based on the conversation.
+Do NOT follow a fixed order.
 
 ==================================================
-QUESTION VARIATION
+NATURAL QUESTION VARIATION
 ==================================================
 
-Do not use exactly the same question repeatedly.
+Do not repeat the exact same sentence.
 
 Use natural variations.
 
 ==================================================
-IF CUSTOMER DOES NOT KNOW
+IF CUSTOMER SAYS "I DON'T KNOW"
 ==================================================
 
 If customer says:
@@ -191,13 +230,21 @@ If customer says:
 
 Do not stop.
 
-Suggest a practical solution and ask one simple question.
+Suggest a practical solution and ask one simple next question.
+
+==================================================
+CUSTOMER CHANGES TOPIC
+==================================================
+
+If the customer changes their industry or requirement, adapt immediately.
+
+Do not force the previous flow.
 
 ==================================================
 FAQ
 ==================================================
 
-If customer asks:
+If the customer asks:
 
 "Mobile-la work aaguma?"
 "WhatsApp integration irukka?"
@@ -205,7 +252,7 @@ If customer asks:
 "Price evlo?"
 "How long?"
 
-Answer that question first.
+Answer the question first.
 
 Then continue naturally with ONE relevant question.
 
@@ -213,33 +260,35 @@ Then continue naturally with ONE relevant question.
 PRICE
 ==================================================
 
-Never invent exact prices.
+NEVER invent an exact price.
 
 If customer asks price:
 
 "Exact cost requirements and features depend pannum sir. Unga workflow understand pannitu proper quotation suggest pannalam."
 
-Then ask one useful question.
+Then ask one relevant question.
 
 ==================================================
 CONTACT
 ==================================================
 
-If customer gives a phone number or email:
+If customer gives phone number or email:
 
 Save it.
 
-Do NOT ask for it again.
+DO NOT ask for it again.
 
-Do not repeatedly ask for contact details.
+Do not repeat the number unnecessarily.
 
 ==================================================
-TOPIC CHANGE
+LEAD CLOSING
 ==================================================
 
-If customer changes industry or requirement, adapt to the new requirement.
+When the customer provides contact information or clearly agrees to proceed/contact:
 
-Do not force the previous flow.
+Set leadClosed to true.
+
+Do not continue asking unnecessary discovery questions.
 
 ==================================================
 CURRENT MEMORY
@@ -260,171 +309,315 @@ CURRENT CUSTOMER MESSAGE
 ${message}
 
 ==================================================
-FINAL BEHAVIOR
+FINAL INSTRUCTION
 ==================================================
 
-Think about the entire conversation before replying.
+Think about the complete conversation.
 
 Understand what the customer actually means.
 
-Do not hallucinate facts.
+Do not invent facts.
 
 Do not invent prices.
 
 Do not repeat answered questions.
 
-Do not end the conversation unnecessarily.
+Do not unnecessarily end the conversation.
 
-Keep the response natural and conversational.
+Return a natural conversational response.
 `;
 
-    const url =
-      "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent";
+    /*
+    ============================================================
+    GEMINI MODELS
+    ============================================================
+    
+    Primary:
+    gemini-3.8-flash
 
-    const response = await fetch(url, {
-      method: "POST",
+    Fallback:
+    gemini-3.5-flash-lite
+    */
 
-      headers: {
-        "Content-Type": "application/json",
-        "x-goog-api-key": apiKey
-      },
+    const models = [
+      "gemini-3.8-flash",
+      "gemini-3.5-flash-lite"
+    ];
 
-      body: JSON.stringify({
-        system_instruction: {
-          parts: [
-            {
-              text: "You are KIKT Software Solutions' natural AI sales assistant. Follow the user conversation instructions exactly."
-            }
-          ]
+    /*
+    ============================================================
+    JSON SCHEMA
+    ============================================================
+    */
+
+    const responseSchema = {
+      type: "object",
+
+      properties: {
+        reply: {
+          type: "string"
         },
 
-        contents: [
-          {
-            role: "user",
-            parts: [
-              {
-                text: prompt
-              }
-            ]
-          }
-        ],
+        memory: {
+          type: "object",
 
-        generationConfig: {
-          temperature: 0.7,
-          maxOutputTokens: 600,
+          properties: {
+            industry: {
+              type: "string"
+            },
 
-          responseMimeType: "application/json",
-
-          responseSchema: {
-            type: "object",
-
-            properties: {
-              reply: {
-                type: "string",
-                description:
-                  "The natural conversational reply to the customer."
-              },
-
-              memory: {
-                type: "object",
-
-                properties: {
-                  industry: {
-                    type: "string"
-                  },
-
-                  requirements: {
-                    type: "array",
-                    items: {
-                      type: "string"
-                    }
-                  },
-
-                  problems: {
-                    type: "array",
-                    items: {
-                      type: "string"
-                    }
-                  },
-
-                  users: {
-                    type: "string"
-                  },
-
-                  platform: {
-                    type: "string"
-                  },
-
-                  currentSystem: {
-                    type: "string"
-                  },
-
-                  contact: {
-                    type: "string"
-                  },
-
-                  email: {
-                    type: "string"
-                  },
-
-                  leadClosed: {
-                    type: "boolean"
-                  }
-                },
-
-                required: [
-                  "industry",
-                  "requirements",
-                  "problems",
-                  "users",
-                  "platform",
-                  "currentSystem",
-                  "contact",
-                  "email",
-                  "leadClosed"
-                ]
-              },
-
-              leadClosed: {
-                type: "boolean"
+            requirements: {
+              type: "array",
+              items: {
+                type: "string"
               }
             },
 
-            required: [
-              "reply",
-              "memory",
-              "leadClosed"
-            ]
-          }
+            problems: {
+              type: "array",
+              items: {
+                type: "string"
+              }
+            },
+
+            users: {
+              type: "string"
+            },
+
+            platform: {
+              type: "string"
+            },
+
+            currentSystem: {
+              type: "string"
+            },
+
+            contact: {
+              type: "string"
+            },
+
+            email: {
+              type: "string"
+            },
+
+            leadClosed: {
+              type: "boolean"
+            }
+          },
+
+          required: [
+            "industry",
+            "requirements",
+            "problems",
+            "users",
+            "platform",
+            "currentSystem",
+            "contact",
+            "email",
+            "leadClosed"
+          ]
+        },
+
+        leadClosed: {
+          type: "boolean"
         }
-      })
-    });
+      },
 
-    const data = await response.json();
+      required: [
+        "reply",
+        "memory",
+        "leadClosed"
+      ]
+    };
 
-    if (!response.ok) {
-      return res.status(500).json({
-        error: "Gemini Error",
-        status: response.status,
-        details: data
+    /*
+    ============================================================
+    GEMINI REQUEST FUNCTION
+    ============================================================
+    */
+
+    async function callGemini(model) {
+
+      const url =
+        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
+
+      return await fetch(url, {
+        method: "POST",
+
+        headers: {
+          "Content-Type": "application/json",
+          "x-goog-api-key": apiKey
+        },
+
+        body: JSON.stringify({
+          system_instruction: {
+            parts: [
+              {
+                text:
+                  "You are KIKT Software Solutions' natural AI sales assistant. Follow the conversation instructions exactly."
+              }
+            ]
+          },
+
+          contents: [
+            {
+              role: "user",
+
+              parts: [
+                {
+                  text: prompt
+                }
+              ]
+            }
+          ],
+
+          generationConfig: {
+            temperature: 0.7,
+
+            maxOutputTokens: 600,
+
+            responseMimeType: "application/json",
+
+            responseSchema: responseSchema
+          }
+        })
       });
     }
+
+    /*
+    ============================================================
+    RETRY + FALLBACK
+    ============================================================
+    */
+
+    let response = null;
+    let data = null;
+    let lastError = null;
+
+    for (const model of models) {
+
+      for (let attempt = 1; attempt <= 2; attempt++) {
+
+        try {
+
+          response = await callGemini(model);
+
+          data = await response.json();
+
+          /*
+          SUCCESS
+          */
+
+          if (response.ok) {
+            break;
+          }
+
+          /*
+          RETRY THESE TEMPORARY ERRORS
+          */
+
+          const retryable =
+            response.status === 429 ||
+            response.status === 500 ||
+            response.status === 502 ||
+            response.status === 503 ||
+            response.status === 504;
+
+          lastError = {
+            model,
+            attempt,
+            status: response.status,
+            data
+          };
+
+          if (!retryable) {
+            break;
+          }
+
+          /*
+          Wait before retry.
+          1st retry = 1 second
+          2nd retry = 2 seconds
+          */
+
+          if (attempt < 2) {
+            await new Promise(resolve =>
+              setTimeout(resolve, 1000 * attempt)
+            );
+          }
+
+        } catch (error) {
+
+          lastError = {
+            model,
+            attempt,
+            message: error.message
+          };
+
+          if (attempt < 2) {
+            await new Promise(resolve =>
+              setTimeout(resolve, 1000 * attempt)
+            );
+          }
+        }
+      }
+
+      /*
+      If successful, stop trying other models.
+      */
+
+      if (response && response.ok) {
+        break;
+      }
+    }
+
+    /*
+    ============================================================
+    ALL MODELS FAILED
+    ============================================================
+    */
+
+    if (!response || !response.ok) {
+
+      return res.status(500).json({
+        error: "Gemini temporarily unavailable",
+        message:
+          "AI service is temporarily busy. Please try again.",
+        lastError
+      });
+    }
+
+    /*
+    ============================================================
+    EXTRACT RESPONSE
+    ============================================================
+    */
 
     const rawReply =
       data?.candidates?.[0]?.content?.parts?.[0]?.text;
 
     if (!rawReply) {
+
       return res.status(500).json({
         error: "No Gemini reply",
         details: data
       });
     }
 
+    /*
+    ============================================================
+    PARSE JSON
+    ============================================================
+    */
+
     let aiResult;
 
     try {
+
       aiResult = JSON.parse(rawReply);
+
     } catch (error) {
+
       return res.status(500).json({
         error: "Invalid Gemini JSON",
         message: error.message,
@@ -432,9 +625,16 @@ Keep the response natural and conversational.
       });
     }
 
+    /*
+    ============================================================
+    MERGE MEMORY
+    ============================================================
+    */
+
     const aiMemory = aiResult.memory || {};
 
     const newMemory = {
+
       industry:
         aiMemory.industry ||
         currentMemory.industry ||
@@ -481,12 +681,19 @@ Keep the response natural and conversational.
           : currentMemory.leadClosed
     };
 
+    /*
+    ============================================================
+    FINAL REPLY
+    ============================================================
+    */
+
     const finalReply =
       typeof aiResult.reply === "string"
         ? aiResult.reply.trim()
         : "";
 
     if (!finalReply) {
+
       return res.status(500).json({
         error: "AI reply is empty",
         details: aiResult
@@ -494,8 +701,11 @@ Keep the response natural and conversational.
     }
 
     return res.status(200).json({
+
       reply: finalReply,
+
       memory: newMemory,
+
       leadClosed:
         typeof aiResult.leadClosed === "boolean"
           ? aiResult.leadClosed
@@ -503,6 +713,7 @@ Keep the response natural and conversational.
     });
 
   } catch (error) {
+
     return res.status(500).json({
       error: "Server Error",
       message: error.message
