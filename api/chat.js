@@ -1,118 +1,177 @@
 export default async function handler(req, res) {
   if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method not allowed" });
+    return res.status(405).json({
+      error: "Method not allowed"
+    });
   }
 
   const apiKey = process.env.GEMINI_API_KEY;
 
   if (!apiKey) {
     return res.status(500).json({
-      error: "GEMINI_API_KEY is not configured in Vercel."
+      error: "GEMINI_API_KEY missing in Vercel Environment Variables."
     });
   }
 
   try {
-    const {
-      message = "",
-      history = [],
-      memory = {}
-    } = req.body || {};
+    const body = req.body || {};
 
-    if (!message.trim()) {
-      return res.status(400).json({ error: "Message is required." });
+    const message = String(body.message || "").trim();
+
+    const history = Array.isArray(body.history)
+      ? body.history
+      : [];
+
+    const memory =
+      body.memory &&
+      typeof body.memory === "object"
+        ? body.memory
+        : {};
+
+    if (!message) {
+      return res.status(400).json({
+        error: "Customer message is empty."
+      });
     }
 
     const systemPrompt = `
 You are the AI Sales & Support Assistant for KIKT Software Solutions.
 
-Your job is to understand customers naturally and help identify the software solution they need.
+You talk to customers about software requirements.
 
-LANGUAGE:
-- Understand Tamil, Tanglish and English.
-- Reply naturally in the customer's language.
-- For Tanglish, use simple spoken Tamil written in English.
-- Sound like a real helpful sales/support person, NOT a questionnaire.
-- You may use "sir" naturally, but don't overuse it.
+IMPORTANT:
+You are NOT a rule-based chatbot.
+You must understand the meaning of what the customer says.
 
-IMPORTANT CONVERSATION RULES:
+LANGUAGES:
+- Tamil
+- Tanglish
+- English
+- Mixed Tamil + English
+- Speech-to-text mistakes
 
-1. Understand meaning even when grammar is poor, words are misspelled,
-   or speech-to-text has mistakes.
+Always understand the customer's intended meaning.
 
-2. Infer the customer's industry and requirements from their message.
-   Do NOT ask "what industry?" when it can already be inferred.
+CONVERSATION STYLE:
+- Natural
+- Friendly
+- Short
+- Professional
+- Human-like
+- Do not sound like a questionnaire.
+- You can call the customer "sir" naturally.
+- Do not use "sir" in every sentence.
 
-3. NEVER ask a question that the customer has already answered.
+IMPORTANT SALES RULES:
 
-4. Ask only ONE useful next question at a time.
+1. Understand the customer's requirement from their message.
 
-5. If the customer gives multiple requirements in one message,
-   remember ALL of them.
+2. If the customer says:
 
-6. If the customer corrects something, update the information.
-   Do not continue with the old assumption.
+"enaku vara leads ah follow panara mari software venu"
 
-7. If the customer says "I don't know", "you suggest", etc.,
-   suggest suitable software modules based on their problem.
+Understand that they need a Lead Management / CRM type software.
 
-8. If the customer asks another question in the middle of the sales
-   conversation, answer that question first and then continue naturally.
+DO NOT immediately ask:
+"Which industry?"
 
-9. Never invent exact prices, delivery dates, guarantees or existing
-   KIKT features that were not provided.
+Instead respond naturally, for example:
+"Sure sir. Unga leads-ah collect panni, follow-up status, reminder, salesperson assignment madhiri manage panna CRM solution customize pannalaam. Leads enga irundhu varudhu sir — Meta Ads, website, WhatsApp, illa vera source-ah?"
 
-10. If the customer asks about price, explain that quotation depends
-    on requirements and scope.
+3. If the customer already mentioned their industry,
+NEVER ask the industry again.
 
-11. If the customer provides a phone number:
-    - save it as contact
-    - confirm it briefly
-    - set leadClosed=true
-    - NEVER ask for the phone number again.
+4. If the customer gives multiple requirements,
+remember ALL requirements.
 
-12. If email is provided, remember it and don't ask again.
+Example:
 
-13. NEVER restart the conversation.
+"Meta ads la vara lead eduthu sales follow up panara mari app venu"
 
-14. NEVER repeat a generic introduction after every message.
+Understand:
 
-15. If customer says:
-    "enaku meta ads la vara lead eduthu sales follow up
-     panara mari app venu"
+Industry:
+Possibly Digital Marketing / Lead Generation
 
-    Understand:
-    - likely digital marketing / lead generation business
-    - Meta Ads lead capture
-    - lead management
-    - sales follow-up
+Requirements:
+- Meta Ads lead capture
+- Lead management
+- Sales follow-up
 
-    Do NOT ask "what industry?" immediately.
+Do NOT ask the same things again.
 
-16. If customer then says:
-    "digital marketing"
+5. If the customer later says:
 
-    Do NOT repeat the previous answer.
-    Continue with the next useful question.
+"digital marketing"
 
-17. If enough information is available, move toward quotation/contact
-    instead of asking unnecessary questions.
+Then remember:
 
-18. Do not claim that a quotation, meeting or demo was actually booked
-    unless the user has done it through this interface.
+Industry = Digital Marketing
+
+Continue the conversation.
+
+Do NOT repeat the previous answer.
+
+6. If the customer says:
+"I don't know"
+"you suggest"
+"neenga suggest pannunga"
+
+Then suggest suitable software modules based on the problem.
+
+7. If customer asks a question in the middle,
+answer that question first and continue the conversation.
+
+8. Never repeat a question that has already been answered.
+
+9. Never restart the conversation.
+
+10. Never give fake exact pricing.
+
+If asked price:
+"Quotation depends on the required modules and scope sir."
+
+11. If customer provides phone number:
+- Save the number.
+- Confirm it.
+- Set leadClosed = true.
+- Do NOT ask phone number again.
+
+12. If customer provides email:
+save it and don't ask again.
+
+13. If customer changes their requirement:
+update memory.
+
+14. If customer corrects a speech recognition mistake:
+understand the correction and continue.
+
+15. Ask only ONE useful question at a time.
+
+16. If enough information is available,
+move naturally toward contact/demo/quotation.
+
+17. Never claim a meeting or quotation was actually booked unless it was done through this application.
+
+18. Do not invent KIKT features.
+If uncertain, say:
+"We can customize/develop that based on your requirement."
 
 CURRENT MEMORY:
 ${JSON.stringify(memory, null, 2)}
 
-CONVERSATION HISTORY:
+PREVIOUS CONVERSATION:
 ${JSON.stringify(history.slice(-20), null, 2)}
 
 LATEST CUSTOMER MESSAGE:
 ${message}
 
-Return ONLY valid JSON:
+Return ONLY valid JSON.
+
+Required format:
 
 {
-  "reply": "complete natural reply to customer",
+  "reply": "natural reply to customer",
   "memory": {
     "industry": "",
     "requirements": [],
@@ -128,153 +187,314 @@ Return ONLY valid JSON:
   "shouldClose": false
 }
 
-Memory rules:
-- Preserve existing information.
-- Add new requirements instead of deleting old ones.
-- Update information when customer corrects it.
-- Never put internal reasoning inside reply.
+MEMORY RULES:
+- Keep existing information.
+- Add new requirements.
+- Do not delete old requirements unless customer clearly changes them.
+- Update industry when customer provides it.
+- Never ask already answered questions.
 `;
 
     const contents = [];
 
     for (const item of history.slice(-20)) {
-      if (!item || !item.role || !item.text) continue;
+      if (!item) continue;
+
+      if (!item.role || !item.text) continue;
 
       contents.push({
-        role: item.role === "assistant" ? "model" : "user",
-        parts: [{ text: String(item.text) }]
+        role:
+          item.role === "assistant"
+            ? "model"
+            : "user",
+
+        parts: [
+          {
+            text: String(item.text)
+          }
+        ]
       });
     }
 
     contents.push({
       role: "user",
-      parts: [{
-        text: `CURRENT MEMORY:
-${JSON.stringify(memory)}
 
-LATEST MESSAGE:
-${message}`
-      }]
-    });
+      parts: [
+        {
+          text: `
+CURRENT CUSTOMER MEMORY:
 
-    const url =
-      "https://generativelanguage.googleapis.com/v1beta/models/" +
-      "gemini-2.5-flash:generateContent?key=" +
-      encodeURIComponent(apiKey);
+${JSON.stringify(memory, null, 2)}
 
-    const response = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        system_instruction: {
-          parts: [{ text: systemPrompt }]
-        },
-        contents,
-        generationConfig: {
-          temperature: 0.7,
-          responseMimeType: "application/json"
+LATEST CUSTOMER MESSAGE:
+
+${message}
+`
         }
-      })
+      ]
     });
 
-    const data = await response.json();
+    /*
+      Gemini REST API
+    */
 
-    if (!response.ok) {
-      console.error("Gemini error:", data);
+    const geminiURL =
+      "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
+
+    const geminiResponse = await fetch(
+      geminiURL,
+      {
+        method: "POST",
+
+        headers: {
+          "Content-Type": "application/json",
+          "x-goog-api-key": apiKey
+        },
+
+        body: JSON.stringify({
+
+          system_instruction: {
+            parts: [
+              {
+                text: systemPrompt
+              }
+            ]
+          },
+
+          contents: contents,
+
+          generationConfig: {
+            temperature: 0.7,
+            responseMimeType: "application/json"
+          }
+
+        })
+      }
+    );
+
+    const data =
+      await geminiResponse.json();
+
+    /*
+      Gemini API error
+    */
+
+    if (!geminiResponse.ok) {
+
+      console.error(
+        "GEMINI API ERROR:",
+        JSON.stringify(data)
+      );
 
       return res.status(502).json({
-        error: data?.error?.message || "Gemini API request failed."
+
+        error:
+          data?.error?.message ||
+          "Gemini API request failed."
+
       });
     }
 
-    const raw =
-      data?.candidates?.[0]?.content?.parts
-        ?.map(part => part.text || "")
-        .join("") || "";
+    /*
+      Extract Gemini response
+    */
 
-    if (!raw) {
+    const parts =
+      data?.candidates?.[0]?.content?.parts || [];
+
+    const rawResponse =
+      parts
+        .map(part => part.text || "")
+        .join("")
+        .trim();
+
+    if (!rawResponse) {
+
+      console.error(
+        "EMPTY GEMINI RESPONSE:",
+        JSON.stringify(data)
+      );
+
       return res.status(502).json({
-        error: "Gemini returned empty response."
+        error:
+          "Gemini returned an empty response."
       });
     }
+
+    /*
+      Parse JSON
+    */
 
     let result;
 
     try {
-      result = JSON.parse(raw);
-    } catch {
-      const cleaned = raw
-        .replace(/^```json\s*/i, "")
-        .replace(/^```\s*/i, "")
-        .replace(/\s*```$/i, "")
-        .trim();
 
-      result = JSON.parse(cleaned);
+      result =
+        JSON.parse(rawResponse);
+
+    } catch (error) {
+
+      const cleaned =
+        rawResponse
+          .replace(/^```json/i, "")
+          .replace(/^```/i, "")
+          .replace(/```$/i, "")
+          .trim();
+
+      try {
+
+        result =
+          JSON.parse(cleaned);
+
+      } catch (jsonError) {
+
+        console.error(
+          "INVALID GEMINI JSON:",
+          rawResponse
+        );
+
+        return res.status(502).json({
+          error:
+            "Gemini returned invalid JSON."
+        });
+      }
     }
 
+    /*
+      Previous memory
+    */
+
     const oldMemory = memory || {};
-    const newMemory = result.memory || {};
+
+    const aiMemory =
+      result.memory || {};
+
+    /*
+      Build safe memory
+    */
 
     const safeMemory = {
+
       industry:
-        String(newMemory.industry || oldMemory.industry || ""),
+        String(
+          aiMemory.industry ||
+          oldMemory.industry ||
+          ""
+        ),
 
       requirements:
-        Array.isArray(newMemory.requirements)
-          ? newMemory.requirements.map(String)
-          : Array.isArray(oldMemory.requirements)
-            ? oldMemory.requirements.map(String)
-            : [],
+        Array.isArray(
+          aiMemory.requirements
+        )
+          ? aiMemory.requirements.map(
+              String
+            )
+          : Array.isArray(
+              oldMemory.requirements
+            )
+              ? oldMemory.requirements.map(
+                  String
+                )
+              : [],
 
       problems:
-        Array.isArray(newMemory.problems)
-          ? newMemory.problems.map(String)
-          : Array.isArray(oldMemory.problems)
-            ? oldMemory.problems.map(String)
-            : [],
+        Array.isArray(
+          aiMemory.problems
+        )
+          ? aiMemory.problems.map(
+              String
+            )
+          : Array.isArray(
+              oldMemory.problems
+            )
+              ? oldMemory.problems.map(
+                  String
+                )
+              : [],
 
       users:
-        String(newMemory.users || oldMemory.users || ""),
+        String(
+          aiMemory.users ||
+          oldMemory.users ||
+          ""
+        ),
 
       platform:
-        String(newMemory.platform || oldMemory.platform || ""),
+        String(
+          aiMemory.platform ||
+          oldMemory.platform ||
+          ""
+        ),
 
       currentSystem:
         String(
-          newMemory.currentSystem ||
+          aiMemory.currentSystem ||
           oldMemory.currentSystem ||
           ""
         ),
 
       contact:
-        String(newMemory.contact || oldMemory.contact || ""),
+        String(
+          aiMemory.contact ||
+          oldMemory.contact ||
+          ""
+        ),
 
       email:
-        String(newMemory.email || oldMemory.email || ""),
+        String(
+          aiMemory.email ||
+          oldMemory.email ||
+          ""
+        ),
 
       leadClosed:
         Boolean(
-          newMemory.leadClosed ||
+          aiMemory.leadClosed ||
           oldMemory.leadClosed
         )
+
     };
 
+    /*
+      Final response
+    */
+
     return res.status(200).json({
-      reply: String(result.reply || ""),
-      memory: safeMemory,
-      nextQuestion: String(result.nextQuestion || ""),
-      shouldClose: Boolean(
-        result.shouldClose || safeMemory.leadClosed
-      )
+
+      reply:
+        String(
+          result.reply || ""
+        ),
+
+      memory:
+        safeMemory,
+
+      nextQuestion:
+        String(
+          result.nextQuestion || ""
+        ),
+
+      shouldClose:
+        Boolean(
+          result.shouldClose ||
+          safeMemory.leadClosed
+        )
+
     });
 
   } catch (error) {
-    console.error(error);
+
+    console.error(
+      "SERVER ERROR:",
+      error
+    );
 
     return res.status(500).json({
-      error: error?.message || "Unexpected server error."
+
+      error:
+        error?.message ||
+        "Unexpected server error."
+
     });
   }
 }
