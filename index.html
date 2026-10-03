@@ -7,160 +7,169 @@
 <title>KIKT AI Voice Assistant</title>
 
 <style>
-
 * {
-  box-sizing: border-box;
+    box-sizing: border-box;
 }
 
 body {
-  margin: 0;
-  padding: 18px;
-  font-family: Arial, sans-serif;
-  background: #eef2f7;
-  color: #172033;
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #f4f7fb;
+    color: #1f2937;
 }
 
-.app {
-  max-width: 560px;
-  margin: 20px auto;
-  padding: 22px;
-  background: white;
-  border-radius: 18px;
-  box-shadow: 0 5px 24px #0001;
+.container {
+    max-width: 850px;
+    margin: 30px auto;
+    background: white;
+    border-radius: 18px;
+    padding: 25px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.08);
 }
 
-h2 {
-  text-align: center;
-  color: #1555a5;
-  margin-bottom: 6px;
+h1 {
+    margin-top: 0;
+    text-align: center;
 }
 
 .subtitle {
-  text-align: center;
-  color: #666;
-  margin-top: 0;
+    text-align: center;
+    color: #667085;
+    margin-bottom: 25px;
+}
+
+.status {
+    text-align: center;
+    padding: 10px;
+    border-radius: 10px;
+    background: #eef2ff;
+    margin-bottom: 15px;
+    font-weight: bold;
+}
+
+.chat {
+    height: 430px;
+    overflow-y: auto;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    padding: 15px;
+    background: #fafafa;
+}
+
+.message {
+    margin: 10px 0;
+    padding: 12px 15px;
+    border-radius: 14px;
+    max-width: 85%;
+    line-height: 1.5;
+    white-space: pre-wrap;
+}
+
+.ai {
+    background: #eef2ff;
+    margin-right: auto;
+}
+
+.user {
+    background: #dcfce7;
+    margin-left: auto;
+}
+
+.controls {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
 }
 
 button {
-  width: 100%;
-  border: 0;
-  border-radius: 10px;
-  padding: 15px;
-  margin-top: 10px;
-  font-size: 16px;
-  color: white;
-  cursor: pointer;
-}
-
-button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
+    border: none;
+    border-radius: 10px;
+    padding: 12px 16px;
+    cursor: pointer;
+    font-weight: bold;
 }
 
 .start {
-  background: #1769d2;
+    background: #111827;
+    color: white;
 }
 
-.mic {
-  background: #16834a;
-}
-
-.send {
-  background: #5b55b8;
+.speak {
+    background: #2563eb;
+    color: white;
 }
 
 .stop {
-  background: #c83232;
+    background: #dc2626;
+    color: white;
 }
 
-#status {
-  margin-top: 15px;
-  padding: 12px;
-  border-radius: 10px;
-  background: #eef3fa;
-  font-size: 14px;
-  overflow-wrap: anywhere;
-}
-
-#chat {
-  margin-top: 15px;
-  padding: 15px;
-  min-height: 200px;
-  max-height: 430px;
-  overflow-y: auto;
-  background: #f5f7fb;
-  border-radius: 12px;
-  white-space: pre-wrap;
-  line-height: 1.65;
-  overflow-wrap: anywhere;
+.input-area {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
 }
 
 input {
-  width: 100%;
-  margin-top: 14px;
-  padding: 14px;
-  border: 1px solid #bbb;
-  border-radius: 10px;
-  font-size: 16px;
+    flex: 1;
+    padding: 13px;
+    border: 1px solid #d1d5db;
+    border-radius: 10px;
+    font-size: 16px;
 }
 
-.note {
-  font-size: 13px;
-  color: #666;
-  line-height: 1.5;
-  margin-top: 14px;
+.send {
+    background: #16a34a;
+    color: white;
 }
 
+.small {
+    margin-top: 12px;
+    color: #667085;
+    font-size: 13px;
+    text-align: center;
+}
 </style>
 </head>
 
 <body>
 
-<div class="app">
+<div class="container">
 
-  <h2>KIKT AI Voice Assistant</h2>
+    <h1>🤖 KIKT AI Voice Assistant</h1>
 
-  <p class="subtitle">
-    Tamil + English Customer Support Demo
-  </p>
+    <div class="subtitle">
+        AI Sales & Software Support Assistant
+    </div>
 
-  <button class="start" onclick="startAI()">
-    Start AI
-  </button>
+    <div id="status" class="status">
+        Ready
+    </div>
 
-  <button class="mic" onclick="startMic()">
-    🎙️ Speak to AI
-  </button>
+    <div id="chat" class="chat"></div>
 
-  <button class="stop" onclick="stopAI()">
-    Stop Voice
-  </button>
+    <div class="controls">
+        <button class="start" onclick="startAI()">Start AI</button>
+        <button class="speak" onclick="startListening()">🎤 Speak to AI</button>
+        <button class="stop" onclick="stopSpeaking()">⛔ Stop Voice</button>
+    </div>
 
-  <div id="status">
-    Status: Ready
-  </div>
+    <div class="input-area">
+        <input
+            id="userInput"
+            type="text"
+            placeholder="Type your message..."
+            onkeydown="handleEnter(event)"
+        >
 
-  <div id="chat">
-KIKT AI: வணக்கம் சார்! KIKT Software Solutions-ல இருந்து பேசுறேன். உங்களுக்கு என்ன மாதிரி software தேவைப்படுது?
-  </div>
+        <button class="send" onclick="sendMessage()">
+            Send
+        </button>
+    </div>
 
-  <input
-    id="message"
-    type="text"
-    placeholder="Type your message here"
-  >
-
-  <button
-    class="send"
-    id="sendButton"
-    onclick="sendMessage()"
-  >
-    Send Message
-  </button>
-
-  <p class="note">
-    Bella voice demo. Mic availability depends on your browser.
-  </p>
+    <div class="small">
+        KIKT Software Solutions
+    </div>
 
 </div>
 
@@ -168,20 +177,42 @@ KIKT AI: வணக்கம் சார்! KIKT Software Solutions-ல இர�
 <script>
 
 /* =========================================================
-   BASIC ELEMENTS
+   CUSTOMER MEMORY / CONTEXT
 ========================================================= */
 
-const chat = document.getElementById("chat");
-const statusBox = document.getElementById("status");
-const messageBox = document.getElementById("message");
-const sendButton = document.getElementById("sendButton");
+const customer = {
 
-let currentAudio = null;
-let currentAudioUrl = null;
-let recognition = null;
+    modules: [],
 
-let isStopped = false;
-let isThinking = false;
+    industry: "",
+
+    features: [],
+
+    users: "",
+
+    employees: "",
+
+    platform: "",
+
+    currentSystem: "",
+
+    existingSoftware: "",
+
+    budget: "",
+
+    contact: "",
+
+    companyName: "",
+
+    requirement: [],
+
+    lastQuestion: "",
+
+    conversationStarted: false,
+
+    priceAsked: false
+
+};
 
 
 /* =========================================================
@@ -190,263 +221,119 @@ let isThinking = false;
 
 let conversation = [];
 
+let recognition = null;
 
-/* =========================================================
-   CUSTOMER INFORMATION
-========================================================= */
-
-let customer = {
-
-  softwareType: "",
-
-  businessType: "",
-
-  industry: "",
-
-  features: [],
-
-  employees: "",
-
-  users: "",
-
-  platform: "",
-
-  location: "",
-
-  currentSystem: "",
-
-  requirement: "",
-
-  budget: "",
-
-  contact: "",
-
-  stage: "software"
-
-};
+let currentSpeech = null;
 
 
 /* =========================================================
-   GREETING
+   BASIC HELPERS
 ========================================================= */
 
-const greeting =
-"வணக்கம் சார்! KIKT Software Solutions-ல இருந்து பேசுறேன். உங்களுக்கு என்ன மாதிரி software தேவைப்படுது?";
+function addMessage(sender, text) {
+
+    const chat = document.getElementById("chat");
+
+    const div = document.createElement("div");
+
+    div.className =
+        "message " + (sender === "AI" ? "ai" : "user");
+
+    div.innerText = text;
+
+    chat.appendChild(div);
+
+    chat.scrollTop = chat.scrollHeight;
+}
 
 
-/* =========================================================
-   TEXT NORMALIZATION
-========================================================= */
+function setStatus(text) {
 
-function normalizeText(text) {
+    document.getElementById("status").innerText = text;
 
-  return text
-    .toLowerCase()
-    .replace(/[.,!?;:()]/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
+}
+
+
+function addConversation(role, text) {
+
+    conversation.push({
+        role: role,
+        text: text
+    });
 
 }
 
 
 /* =========================================================
-   DISPLAY MESSAGE
-========================================================= */
-
-function addMessage(name, text) {
-
-  chat.textContent +=
-    "\n\n" + name + ": " + text;
-
-  chat.scrollTop = chat.scrollHeight;
-
-}
-
-
-/* =========================================================
-   AUDIO CLEANUP
-========================================================= */
-
-function cleanupAudio() {
-
-  if (currentAudioUrl) {
-
-    URL.revokeObjectURL(currentAudioUrl);
-
-  }
-
-  currentAudio = null;
-  currentAudioUrl = null;
-
-}
-
-
-function stopCurrentAudio() {
-
-  if (currentAudio) {
-
-    currentAudio.pause();
-
-    currentAudio.currentTime = 0;
-
-  }
-
-  cleanupAudio();
-
-}
-
-
-/* =========================================================
-   BELLA VOICE
+   ELEVENLABS TTS
 ========================================================= */
 
 async function speak(text) {
 
-  stopCurrentAudio();
+    try {
 
-  isStopped = false;
+        stopSpeaking();
 
-  statusBox.textContent =
-    "Bella voice generating...";
+        setStatus("AI speaking...");
 
-  try {
+        const response = await fetch("/api/tts", {
 
-    const response = await fetch(
-      "/api/tts",
-      {
-        method: "POST",
+            method: "POST",
 
-        headers: {
-          "Content-Type": "application/json"
-        },
+            headers: {
+                "Content-Type": "application/json"
+            },
 
-        body: JSON.stringify({
-          text: text
-        })
-      }
-    );
+            body: JSON.stringify({
+                text: text
+            })
 
+        });
 
-    if (!response.ok) {
+        if (!response.ok) {
 
-      let errorMessage =
-        "Voice generation failed";
-
-      try {
-
-        const errorData =
-          await response.json();
-
-        if (errorData.error) {
-
-          errorMessage =
-            errorData.error;
+            throw new Error("TTS failed");
 
         }
 
-      } catch (e) {}
+        const blob = await response.blob();
 
-      throw new Error(errorMessage);
+        const audioURL = URL.createObjectURL(blob);
+
+        currentSpeech = new Audio(audioURL);
+
+        currentSpeech.onended = function() {
+
+            setStatus("Listening / Ready");
+
+        };
+
+        await currentSpeech.play();
 
     }
 
+    catch (error) {
 
-    const audioBlob =
-      await response.blob();
+        console.error(error);
 
+        setStatus("Voice unavailable");
 
-    if (isStopped) {
-      return;
     }
-
-
-    currentAudioUrl =
-      URL.createObjectURL(audioBlob);
-
-
-    currentAudio =
-      new Audio(currentAudioUrl);
-
-
-    currentAudio.onended = () => {
-
-      cleanupAudio();
-
-      if (!isStopped) {
-
-        statusBox.textContent =
-          "Bella voice finished. You can reply.";
-
-      }
-
-    };
-
-
-    currentAudio.onerror = () => {
-
-      cleanupAudio();
-
-      statusBox.textContent =
-        "Audio playback failed.";
-
-    };
-
-
-    await currentAudio.play();
-
-
-    statusBox.textContent =
-      "Bella is speaking...";
-
-
-  } catch (error) {
-
-    console.error(error);
-
-    statusBox.textContent =
-      "Bella voice error: " +
-      error.message;
-
-  }
 
 }
 
 
-/* =========================================================
-   RESET CUSTOMER
-========================================================= */
+function stopSpeaking() {
 
-function resetCustomer() {
+    if (currentSpeech) {
 
-  customer = {
+        currentSpeech.pause();
 
-    softwareType: "",
+        currentSpeech.currentTime = 0;
 
-    businessType: "",
+        currentSpeech = null;
 
-    industry: "",
-
-    features: [],
-
-    employees: "",
-
-    users: "",
-
-    platform: "",
-
-    location: "",
-
-    currentSystem: "",
-
-    requirement: "",
-
-    budget: "",
-
-    contact: "",
-
-    stage: "software"
-
-  };
+    }
 
 }
 
@@ -457,248 +344,307 @@ function resetCustomer() {
 
 function startAI() {
 
-  stopCurrentAudio();
+    if (!customer.conversationStarted) {
 
-  isStopped = false;
+        customer.conversationStarted = true;
 
-  resetCustomer();
+        const greeting =
+            "வணக்கம் sir! KIKT Software Solutions-ல இருந்து பேசுறேன். " +
+            "உங்க business-க்கு என்ன மாதிரி software தேவைப்படுது? " +
+            "Billing, inventory, payroll, CRM, accounting அல்லது வேறு software ஏதாவது தேவையா?";
 
-  conversation = [];
+        addMessage("AI", greeting);
 
-  chat.textContent =
-    "KIKT AI: " + greeting;
+        addConversation("assistant", greeting);
 
+        customer.lastQuestion = "modules";
 
-  conversation.push({
+        speak(greeting);
 
-    role: "assistant",
+    }
 
-    content: greeting
+    else {
 
-  });
+        const text =
+            "Sure sir, நம்ம previous requirement-ல இருந்து continue பண்ணலாம். " +
+            "என்ன information தெரிஞ்சிக்கணும்னு கேளுங்க.";
 
+        addMessage("AI", text);
 
-  speak(greeting);
+        addConversation("assistant", text);
 
-}
+        speak(text);
 
-
-/* =========================================================
-   YES / NO DETECTION
-========================================================= */
-
-function isYes(text) {
-
-  const t = normalizeText(text);
-
-  const yesWords = [
-
-    "yes",
-    "yes sir",
-    "yeah",
-    "yep",
-    "sure",
-    "okay",
-    "ok",
-    "correct",
-    "right",
-    "fine",
-    "good",
-    "ama",
-    "aama",
-    "aamanga",
-    "venum",
-    "venum sir",
-    "வேண்டும்",
-    "வேணும்",
-    "ஆமா",
-    "ஆமாம்",
-    "சரி",
-    "ஆம்",
-    "ok sir",
-    "okay sir"
-
-  ];
-
-  return yesWords.includes(t);
-
-}
-
-
-function isNo(text) {
-
-  const t = normalizeText(text);
-
-  const noWords = [
-
-    "no",
-    "no sir",
-    "not needed",
-    "not required",
-    "vendam",
-    "venam",
-    "வேண்டாம்",
-    "வேணாம்",
-    "இல்லை",
-    "illa",
-    "illai"
-
-  ];
-
-  return noWords.includes(t);
+    }
 
 }
 
 
 /* =========================================================
-   SOFTWARE TYPE DETECTION
+   TEXT INPUT
 ========================================================= */
 
-function detectSoftwareType(text) {
+function handleEnter(event) {
 
-  const t = normalizeText(text);
+    if (event.key === "Enter") {
 
+        sendMessage();
 
-  if (
-    t.includes("billing") ||
-    t.includes("bill software") ||
-    t.includes("invoice") ||
-    t.includes("invoicing") ||
-    t.includes("pos") ||
-    t.includes("point of sale") ||
-    t.includes("பில்லிங்") ||
-    t.includes("பில்")
-  ) {
+    }
 
-    return "billing";
-
-  }
+}
 
 
-  if (
-    t.includes("inventory") ||
-    t.includes("stock management") ||
-    t.includes("stock software") ||
-    t.includes("ஸ்டாக்")
-  ) {
+function sendMessage() {
 
-    return "inventory";
+    const input = document.getElementById("userInput");
 
-  }
+    const text = input.value.trim();
 
+    if (!text) return;
 
-  if (
-    t.includes("payroll") ||
-    t.includes("salary software") ||
-    t.includes("employee salary")
-  ) {
+    addMessage("USER", text);
 
-    return "payroll";
+    addConversation("user", text);
 
-  }
+    input.value = "";
+
+    processCustomerMessage(text);
+
+}
 
 
-  if (
-    t.includes("crm") ||
-    t.includes("customer management")
-  ) {
+/* =========================================================
+   SPEECH RECOGNITION
+========================================================= */
 
-    return "crm";
+function startListening() {
 
-  }
+    const SpeechRecognition =
+        window.SpeechRecognition ||
+        window.webkitSpeechRecognition;
 
+    if (!SpeechRecognition) {
 
-  if (
-    t.includes("accounting") ||
-    t.includes("accounts software") ||
-    t.includes("accounts")
-  ) {
+        alert("Speech recognition is not supported in this browser.");
 
-    return "accounting";
+        return;
 
-  }
+    }
 
+    recognition = new SpeechRecognition();
 
-  if (
-    t.includes("school management") ||
-    t.includes("school software") ||
-    t.includes("college software") ||
-    t.includes("student management") ||
-    t.includes("education software")
-  ) {
+    recognition.lang = "ta-IN";
 
-    return "education";
+    recognition.continuous = false;
 
-  }
+    recognition.interimResults = false;
 
+    setStatus("Listening...");
 
-  if (
-    t.includes("hospital software") ||
-    t.includes("clinic software") ||
-    t.includes("hospital management") ||
-    t.includes("patient management")
-  ) {
+    recognition.start();
 
-    return "healthcare";
+    recognition.onresult = function(event) {
 
-  }
+        const text =
+            event.results[0][0].transcript;
 
+        document.getElementById("userInput").value = text;
 
-  if (
-    t.includes("website") ||
-    t.includes("web site") ||
-    t.includes("web development")
-  ) {
+        processCustomerMessage(text);
 
-    return "website";
+    };
 
-  }
+    recognition.onerror = function(error) {
+
+        console.error(error);
+
+        setStatus("Speech recognition error");
+
+    };
+
+}
 
 
-  if (
-    t.includes("mobile app") ||
-    t.includes("mobile application") ||
-    t.includes("android app") ||
-    t.includes("ios app")
-  ) {
+/* =========================================================
+   NORMALIZE TEXT
+========================================================= */
 
-    return "mobile_app";
+function normalize(text) {
 
-  }
+    return text
+        .toLowerCase()
+        .replace(/[.,!?;:()]/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
 
-
-  if (
-    t.includes("erp") ||
-    t.includes("enterprise software")
-  ) {
-
-    return "erp";
-
-  }
+}
 
 
-  if (
-    t.includes("manufacturing software") ||
-    t.includes("production software") ||
-    t.includes("factory software")
-  ) {
+/* =========================================================
+   UNIQUE ARRAY
+========================================================= */
 
-    return "manufacturing";
+function addUnique(array, value) {
 
-  }
+    if (!array.includes(value)) {
 
+        array.push(value);
 
-  if (
-    t.includes("hr software") ||
-    t.includes("human resource")
-  ) {
+    }
 
-    return "hr";
-
-  }
+}
 
 
-  return "";
+/* =========================================================
+   MODULE DETECTION
+========================================================= */
+
+function detectModules(text) {
+
+    const t = normalize(text);
+
+    const result = [];
+
+    if (
+        t.includes("billing") ||
+        t.includes("bill") ||
+        t.includes("invoice") ||
+        t.includes("invoicing") ||
+        t.includes("பில்") ||
+        t.includes("இன்வாய்ஸ்")
+    ) {
+
+        result.push("Billing");
+
+    }
+
+
+    if (
+        t.includes("inventory") ||
+        t.includes("stock") ||
+        t.includes("stock management") ||
+        t.includes("ஸ்டாக்")
+    ) {
+
+        result.push("Inventory");
+
+    }
+
+
+    if (
+        t.includes("payroll") ||
+        t.includes("salary") ||
+        t.includes("salary management") ||
+        t.includes("சம்பளம்")
+    ) {
+
+        result.push("Payroll");
+
+    }
+
+
+    if (
+        t.includes("accounting") ||
+        t.includes("accounts") ||
+        t.includes("account")
+    ) {
+
+        result.push("Accounting");
+
+    }
+
+
+    if (
+        t.includes("crm") ||
+        t.includes("customer management") ||
+        t.includes("customer relationship")
+    ) {
+
+        result.push("CRM");
+
+    }
+
+
+    if (
+        t.includes("hr") ||
+        t.includes("human resource") ||
+        t.includes("employee management")
+    ) {
+
+        result.push("HR");
+
+    }
+
+
+    if (
+        t.includes("erp")
+    ) {
+
+        result.push("ERP");
+
+    }
+
+
+    if (
+        t.includes("website") ||
+        t.includes("web application") ||
+        t.includes("web app")
+    ) {
+
+        result.push("Website / Web Application");
+
+    }
+
+
+    if (
+        t.includes("mobile app") ||
+        t.includes("mobile application") ||
+        t.includes("android app") ||
+        t.includes("ios app")
+    ) {
+
+        result.push("Mobile Application");
+
+    }
+
+
+    if (
+        t.includes("manufacturing software") ||
+        t.includes("production software") ||
+        t.includes("production management")
+    ) {
+
+        result.push("Manufacturing / Production");
+
+    }
+
+
+    if (
+        t.includes("education software") ||
+        t.includes("school software") ||
+        t.includes("college software") ||
+        t.includes("student management")
+    ) {
+
+        result.push("Education Management");
+
+    }
+
+
+    if (
+        t.includes("hospital") ||
+        t.includes("clinic") ||
+        t.includes("hospital management") ||
+        t.includes("patient management")
+    ) {
+
+        result.push("Healthcare Management");
+
+    }
+
+
+    return result;
 
 }
 
@@ -709,132 +655,148 @@ function detectSoftwareType(text) {
 
 function detectIndustry(text) {
 
-  const t = normalizeText(text);
+    const t = normalize(text);
+
+    const industries = [
+
+        {
+            name: "Manufacturing",
+            words: [
+                "manufacturing",
+                "factory",
+                "production",
+                "industrial",
+                "mill",
+                "company manufacturing"
+            ]
+        },
+
+        {
+            name: "Textile",
+            words: [
+                "textile",
+                "textiles",
+                "spinning",
+                "weaving",
+                "garment",
+                "cotton mill",
+                "yarn"
+            ]
+        },
+
+        {
+            name: "Retail",
+            words: [
+                "retail",
+                "shop",
+                "store",
+                "supermarket",
+                "mart"
+            ]
+        },
+
+        {
+            name: "Wholesale",
+            words: [
+                "wholesale",
+                "wholesaler",
+                "distributor",
+                "distribution"
+            ]
+        },
+
+        {
+            name: "Restaurant",
+            words: [
+                "restaurant",
+                "hotel",
+                "cafe",
+                "food",
+                "bakery"
+            ]
+        },
+
+        {
+            name: "Education",
+            words: [
+                "school",
+                "college",
+                "education",
+                "institute",
+                "academy",
+                "tuition"
+            ]
+        },
+
+        {
+            name: "Healthcare",
+            words: [
+                "hospital",
+                "clinic",
+                "doctor",
+                "medical",
+                "pharmacy"
+            ]
+        },
+
+        {
+            name: "Salon / Beauty",
+            words: [
+                "salon",
+                "beauty parlour",
+                "beauty"
+            ]
+        },
+
+        {
+            name: "Logistics",
+            words: [
+                "logistics",
+                "transport",
+                "transportation",
+                "delivery",
+                "fleet"
+            ]
+        },
+
+        {
+            name: "Construction",
+            words: [
+                "construction",
+                "builder",
+                "real estate",
+                "contractor"
+            ]
+        },
+
+        {
+            name: "Service Business",
+            words: [
+                "service company",
+                "service business",
+                "repair",
+                "maintenance"
+            ]
+        }
+
+    ];
 
 
-  const industries = [
+    for (const item of industries) {
 
-    {
-      name: "retail",
-      words: [
-        "shop",
-        "store",
-        "retail",
-        "supermarket",
-        "mart"
-      ]
-    },
+        for (const word of item.words) {
 
-    {
-      name: "wholesale",
-      words: [
-        "wholesale",
-        "distributor",
-        "distribution"
-      ]
-    },
+            if (t.includes(word)) {
 
-    {
-      name: "textile",
-      words: [
-        "textile",
-        "cloth",
-        "garment",
-        "fabric",
-        "readymade"
-      ]
-    },
+                return item.name;
 
-    {
-      name: "restaurant",
-      words: [
-        "hotel",
-        "restaurant",
-        "bakery",
-        "cafe",
-        "food"
-      ]
-    },
+            }
 
-    {
-      name: "manufacturing",
-      words: [
-        "factory",
-        "manufacturing",
-        "production",
-        "industry"
-      ]
-    },
+        }
 
-    {
-      name: "service",
-      words: [
-        "service",
-        "service center",
-        "repair",
-        "maintenance"
-      ]
-    },
-
-    {
-      name: "education",
-      words: [
-        "school",
-        "college",
-        "institute",
-        "academy"
-      ]
-    },
-
-    {
-      name: "healthcare",
-      words: [
-        "hospital",
-        "clinic",
-        "medical",
-        "pharmacy"
-      ]
-    },
-
-    {
-      name: "salon",
-      words: [
-        "salon",
-        "beauty parlour",
-        "barber",
-        "spa"
-      ]
-    },
-
-    {
-      name: "logistics",
-      words: [
-        "logistics",
-        "transport",
-        "courier",
-        "delivery"
-      ]
     }
 
-  ];
-
-
-  for (const industry of industries) {
-
-    for (const word of industry.words) {
-
-      if (t.includes(word)) {
-
-        return industry.name;
-
-      }
-
-    }
-
-  }
-
-
-  return "";
+    return "";
 
 }
 
@@ -845,170 +807,206 @@ function detectIndustry(text) {
 
 function detectFeatures(text) {
 
-  const t = normalizeText(text);
+    const t = normalize(text);
 
-  const features = [];
-
-
-  const featureMap = [
-
-    {
-      name: "stock management",
-      words: [
-        "stock",
-        "inventory",
-        "ஸ்டாக்"
-      ]
-    },
-
-    {
-      name: "GST",
-      words: [
-        "gst",
-        "tax"
-      ]
-    },
-
-    {
-      name: "barcode",
-      words: [
-        "barcode",
-        "bar code"
-      ]
-    },
-
-    {
-      name: "customer management",
-      words: [
-        "customer management",
-        "customer details",
-        "customer"
-      ]
-    },
-
-    {
-      name: "supplier management",
-      words: [
-        "supplier",
-        "vendor"
-      ]
-    },
-
-    {
-      name: "purchase management",
-      words: [
-        "purchase",
-        "purchasing"
-      ]
-    },
-
-    {
-      name: "sales management",
-      words: [
-        "sales"
-      ]
-    },
-
-    {
-      name: "reports",
-      words: [
-        "report",
-        "reports",
-        "reporting"
-      ]
-    },
-
-    {
-      name: "attendance",
-      words: [
-        "attendance"
-      ]
-    },
-
-    {
-      name: "salary",
-      words: [
-        "salary",
-        "payroll"
-      ]
-    },
-
-    {
-      name: "appointment",
-      words: [
-        "appointment",
-        "booking"
-      ]
-    },
-
-    {
-      name: "online payment",
-      words: [
-        "online payment",
-        "upi",
-        "payment"
-      ]
-    },
-
-    {
-      name: "mobile access",
-      words: [
-        "mobile",
-        "phone",
-        "android"
-      ]
-    },
-
-    {
-      name: "multi-user access",
-      words: [
-        "multi user",
-        "multiple users",
-        "many users"
-      ]
-    }
-
-  ];
+    const result = [];
 
 
-  for (const item of featureMap) {
+    if (
+        t.includes("gst") ||
+        t.includes("tax")
+    ) {
 
-    for (const word of item.words) {
-
-      if (t.includes(word)) {
-
-        features.push(item.name);
-
-        break;
-
-      }
+        result.push("GST / Tax");
 
     }
 
-  }
+
+    if (
+        t.includes("barcode") ||
+        t.includes("bar code")
+    ) {
+
+        result.push("Barcode");
+
+    }
 
 
-  return [...new Set(features)];
+    if (
+        t.includes("purchase")
+    ) {
+
+        result.push("Purchase Management");
+
+    }
+
+
+    if (
+        t.includes("sales")
+    ) {
+
+        result.push("Sales Management");
+
+    }
+
+
+    if (
+        t.includes("customer")
+    ) {
+
+        result.push("Customer Management");
+
+    }
+
+
+    if (
+        t.includes("supplier") ||
+        t.includes("vendor")
+    ) {
+
+        result.push("Supplier Management");
+
+    }
+
+
+    if (
+        t.includes("report") ||
+        t.includes("reports")
+    ) {
+
+        result.push("Reports");
+
+    }
+
+
+    if (
+        t.includes("attendance")
+    ) {
+
+        result.push("Attendance");
+
+    }
+
+
+    if (
+        t.includes("appointment")
+    ) {
+
+        result.push("Appointment Management");
+
+    }
+
+
+    if (
+        t.includes("online payment") ||
+        t.includes("payment gateway") ||
+        t.includes("upi")
+    ) {
+
+        result.push("Online Payment");
+
+    }
+
+
+    if (
+        t.includes("multi user") ||
+        t.includes("multi-user") ||
+        t.includes("multiple users")
+    ) {
+
+        result.push("Multi-user Access");
+
+    }
+
+
+    if (
+        t.includes("production planning") ||
+        t.includes("production")
+    ) {
+
+        result.push("Production Management");
+
+    }
+
+
+    if (
+        t.includes("raw material")
+    ) {
+
+        result.push("Raw Material Management");
+
+    }
+
+
+    if (
+        t.includes("patient")
+    ) {
+
+        result.push("Patient Management");
+
+    }
+
+
+    if (
+        t.includes("student")
+    ) {
+
+        result.push("Student Management");
+
+    }
+
+
+    if (
+        t.includes("fee") ||
+        t.includes("fees")
+    ) {
+
+        result.push("Fee Management");
+
+    }
+
+
+    return result;
 
 }
 
 
 /* =========================================================
-   NUMBER DETECTION
+   USER COUNT DETECTION
 ========================================================= */
 
-function detectNumber(text) {
+function detectUsers(text) {
 
-  const match =
-    text.match(/\b\d+\b/);
+    const t = normalize(text);
 
-  if (match) {
+    let match = t.match(
+        /(\d+)\s*(users?|user|people|persons?|staff|employees?|members?|peru|பேர்|பேரு)/
+    );
 
-    return match[0];
+    if (match) {
 
-  }
+        return match[1];
 
-  return "";
+    }
+
+
+    if (
+        customer.lastQuestion === "users"
+    ) {
+
+        const onlyNumber =
+            t.match(/^(\d+)$/);
+
+        if (onlyNumber) {
+
+            return onlyNumber[1];
+
+        }
+
+    }
+
+
+    return "";
 
 }
 
@@ -1019,963 +1017,1167 @@ function detectNumber(text) {
 
 function detectPlatform(text) {
 
-  const t = normalizeText(text);
+    const t = normalize(text);
 
 
-  if (
-    t.includes("mobile") ||
-    t.includes("phone") ||
-    t.includes("android")
-  ) {
+    if (
+        t.includes("rendum") ||
+        t.includes("both") ||
+        t.includes("mobile and computer") ||
+        t.includes("computer and mobile") ||
+        t.includes("desktop and mobile") ||
+        t.includes("web and mobile")
+    ) {
 
-    return "mobile";
+        return "Computer + Mobile";
 
-  }
-
-
-  if (
-    t.includes("computer") ||
-    t.includes("desktop") ||
-    t.includes("laptop")
-  ) {
-
-    return "desktop";
-
-  }
+    }
 
 
-  if (
-    t.includes("both") ||
-    t.includes("rendum") ||
-    t.includes("இரண்டும்")
-  ) {
+    if (
+        t.includes("mobile only") ||
+        t.includes("mobile la") ||
+        t.includes("mobile") ||
+        t.includes("android")
+    ) {
 
-    return "both";
+        return "Mobile";
 
-  }
+    }
 
 
-  return "";
+    if (
+        t.includes("computer only") ||
+        t.includes("desktop") ||
+        t.includes("laptop") ||
+        t.includes("computer")
+    ) {
+
+        return "Computer / Web";
+
+    }
+
+
+    return "";
 
 }
 
 
 /* =========================================================
-   PRICE DETECTION
+   CURRENT SYSTEM DETECTION
+========================================================= */
+
+function detectCurrentSystem(text) {
+
+    const t = normalize(text);
+
+
+    if (
+        t.includes("manual") ||
+        t.includes("manually") ||
+        t.includes("excel") ||
+        t.includes("spreadsheet") ||
+        t.includes("paper")
+    ) {
+
+        return "Manual / Excel";
+
+    }
+
+
+    if (
+        t.includes("tally")
+    ) {
+
+        return "Tally";
+
+    }
+
+
+    if (
+        t.includes("existing software") ||
+        t.includes("already using") ||
+        t.includes("currently using")
+    ) {
+
+        return "Existing Software";
+
+    }
+
+
+    return "";
+
+}
+
+
+/* =========================================================
+   PRICE QUESTION
 ========================================================= */
 
 function isPriceQuestion(text) {
 
-  const t = normalizeText(text);
-
-  return (
-
-    t.includes("price") ||
-    t.includes("cost") ||
-    t.includes("rate") ||
-    t.includes("amount") ||
-    t.includes("how much") ||
-    t.includes("budget") ||
-    t.includes("quotation") ||
-    t.includes("quote") ||
-    t.includes("விலை") ||
-    t.includes("எவ்வளவு") ||
-    t.includes("ரேட்")
-
-  );
-
-}
+    const t = normalize(text);
 
 
-/* =========================================================
-   UNKNOWN / NOT SURE
-========================================================= */
-
-function isUncertain(text) {
-
-  const t = normalizeText(text);
-
-  return (
-
-    t.includes("dont know") ||
-    t.includes("don't know") ||
-    t.includes("not sure") ||
-    t.includes("you suggest") ||
-    t.includes("suggest") ||
-    t.includes("anything") ||
-    t.includes("whatever") ||
-    t.includes(" தெரியல") ||
-    t.includes("தெரியாது")
-
-  );
+    return (
+        t.includes("price") ||
+        t.includes("cost") ||
+        t.includes("rate") ||
+        t.includes("how much") ||
+        t.includes("evalo") ||
+        t.includes("evlo") ||
+        t.includes("amount") ||
+        t.includes("quotation") ||
+        t.includes("quote") ||
+        t.includes("pricing") ||
+        t.includes("charge")
+    );
 
 }
 
 
 /* =========================================================
-   UPDATE CUSTOMER DATA
+   GENERAL QUESTION DETECTION
 ========================================================= */
 
-function updateCustomer(text) {
+function detectQuestion(text) {
 
-  const software =
-    detectSoftwareType(text);
+    const t = normalize(text);
 
-  const industry =
-    detectIndustry(text);
-
-  const features =
-    detectFeatures(text);
-
-  const number =
-    detectNumber(text);
-
-  const platform =
-    detectPlatform(text);
-
-
-  if (software) {
-
-    customer.softwareType =
-      software;
-
-  }
-
-
-  if (industry) {
-
-    customer.industry =
-      industry;
-
-    customer.businessType =
-      industry;
-
-  }
-
-
-  if (features.length > 0) {
-
-    customer.features = [
-      ...new Set([
-        ...customer.features,
-        ...features
-      ])
-    ];
-
-  }
-
-
-  if (platform) {
-
-    customer.platform =
-      platform;
-
-  }
-
-
-  if (number) {
 
     if (
-      customer.stage === "users"
+        t.includes("gst na enna") ||
+        t.includes("what is gst") ||
+        t.includes("gst meaning")
     ) {
 
-      customer.users =
-        number;
+        return "gst";
 
     }
 
-    else if (
-      customer.stage === "employees"
-    ) {
-
-      customer.employees =
-        number;
-
-    }
-
-  }
-
-
-  if (
-    text.length > 10
-  ) {
-
-    customer.requirement =
-      text;
-
-  }
-
-}
-
-
-/* =========================================================
-   SOFTWARE NAME
-========================================================= */
-
-function softwareName(type) {
-
-  const names = {
-
-    billing: "billing software",
-
-    inventory: "inventory management software",
-
-    payroll: "payroll software",
-
-    crm: "CRM software",
-
-    accounting: "accounting software",
-
-    education: "education management software",
-
-    healthcare: "hospital / clinic management software",
-
-    website: "website",
-
-    mobile_app: "mobile application",
-
-    erp: "ERP software",
-
-    manufacturing: "manufacturing management software",
-
-    hr: "HR management software"
-
-  };
-
-
-  return names[type] ||
-    "custom software";
-
-}
-
-
-/* =========================================================
-   MAIN SMART REPLY
-========================================================= */
-
-function getSmartReply(text) {
-
-  const t =
-    normalizeText(text);
-
-
-  /* Update information first */
-
-  updateCustomer(text);
-
-
-  /* =========================================
-     GREETING
-  ========================================= */
-
-  if (
-    t === "hi" ||
-    t === "hello" ||
-    t === "hai" ||
-    t === "hey" ||
-    t.includes("vanakkam") ||
-    t.includes("வணக்கம்")
-  ) {
-
-    customer.stage =
-      "software";
-
-    return "வணக்கம் சார் 😊 சொல்லுங்க. Unga business-ku enna software requirement irukku?";
-
-  }
-
-
-  /* =========================================
-     PRICE QUESTION
-  ========================================= */
-
-  if (isPriceQuestion(text)) {
-
-    customer.stage =
-      "price";
-
-    if (customer.softwareType) {
-
-      return "Sure sir 👍 " +
-        softwareName(customer.softwareType) +
-        " price exact requirement and features-ku depend aagum. Unga requirement-a complete-ah understand pannitu KIKT team suitable quotation share pannalaam. Unga business type and required features sollunga sir.";
-
-    }
-
-    return "Sure sir 👍 Software price requirement-ku depend aagum. Unga business type and software-la enna functionality venum-nu konjam sollunga. Adha base panni suitable quotation discuss pannalaam.";
-
-  }
-
-
-  /* =========================================
-     NOT SURE / SUGGEST
-  ========================================= */
-
-  if (isUncertain(text)) {
-
-    if (!customer.softwareType) {
-
-      return "Problem illa sir 😊 Naan guide panren. First unga business enna type sir? Shop, manufacturing, service, textile, education, healthcare, illa vera business-aa?";
-
-    }
-
-
-    return "No problem sir 👍 Unga requirement-ku suitable features-a naan suggest panren. First daily business-la ippo enna process manual-ah or existing software-la manage panreenga?";
-
-  }
-
-
-  /* =========================================
-     SOFTWARE NOT YET KNOWN
-  ========================================= */
-
-  if (!customer.softwareType) {
-
-    customer.stage =
-      "software";
-
-    return "Okay sir 👍 Purinjukitten. Unga business-ku enna software venum-nu sollunga — billing, inventory, payroll, accounting, CRM, website, mobile app, ERP, illa completely custom software-aa?";
-
-  }
-
-
-  /* =========================================
-     INDUSTRY NOT KNOWN
-  ========================================= */
-
-  if (
-    !customer.industry &&
-    customer.softwareType !== "website" &&
-    customer.softwareType !== "mobile_app"
-  ) {
-
-    customer.stage =
-      "industry";
-
-    return "Sure sir 👍 " +
-      softwareName(customer.softwareType) +
-      " setup pannalaam. Unga business / industry enna sir?";
-
-  }
-
-
-  /* =========================================
-     YES ANSWER
-  ========================================= */
-
-  if (isYes(text)) {
-
-
-    /* Billing / POS */
 
     if (
-      customer.softwareType === "billing"
+        t.includes("barcode na enna") ||
+        t.includes("what is barcode") ||
+        t.includes("barcode meaning")
     ) {
 
-      if (
+        return "barcode";
+
+    }
+
+
+    if (
+        t.includes("crm na enna") ||
+        t.includes("what is crm")
+    ) {
+
+        return "crm";
+
+    }
+
+
+    if (
+        t.includes("erp na enna") ||
+        t.includes("what is erp")
+    ) {
+
+        return "erp";
+
+    }
+
+
+    if (
+        t.includes("cloud na enna") ||
+        t.includes("cloud software") ||
+        t.includes("cloud meaning")
+    ) {
+
+        return "cloud";
+
+    }
+
+
+    if (
+        t.includes("multi user") ||
+        t.includes("multiple users") ||
+        t.includes("separate login")
+    ) {
+
+        return "multiuser";
+
+    }
+
+
+    if (
+        t.includes("mobile la use") ||
+        t.includes("mobile use") ||
+        t.includes("phone la use") ||
+        t.includes("mobile support")
+    ) {
+
+        return "mobile";
+
+    }
+
+
+    if (
+        t.includes("data safe") ||
+        t.includes("data security") ||
+        t.includes("backup")
+    ) {
+
+        return "security";
+
+    }
+
+
+    if (
+        t.includes("demo") ||
+        t.includes("demo available")
+    ) {
+
+        return "demo";
+
+    }
+
+
+    return "";
+
+}
+
+
+/* =========================================================
+   FEATURE SUGGESTIONS
+========================================================= */
+
+function getSuggestedFeatures() {
+
+    const suggestions = [];
+
+
+    if (customer.modules.includes("Billing")) {
+
+        suggestions.push(
+            "GST / Tax",
+            "Sales Management",
+            "Purchase Management",
+            "Customer Management",
+            "Barcode",
+            "Reports"
+        );
+
+    }
+
+
+    if (customer.modules.includes("Inventory")) {
+
+        suggestions.push(
+            "Stock Management",
+            "Purchase Management",
+            "Supplier Management",
+            "Sales Management",
+            "Barcode",
+            "Reports"
+        );
+
+    }
+
+
+    if (customer.modules.includes("Payroll")) {
+
+        suggestions.push(
+            "Attendance",
+            "Salary Management",
+            "Employee Management",
+            "Reports"
+        );
+
+    }
+
+
+    if (customer.modules.includes("CRM")) {
+
+        suggestions.push(
+            "Customer Management",
+            "Follow-up",
+            "Reports"
+        );
+
+    }
+
+
+    if (
+        customer.industry === "Manufacturing" ||
+        customer.industry === "Textile"
+    ) {
+
+        suggestions.push(
+            "Production Management",
+            "Raw Material Management",
+            "Stock Management",
+            "Purchase Management",
+            "Reports"
+        );
+
+    }
+
+
+    if (customer.industry === "Education") {
+
+        suggestions.push(
+            "Student Management",
+            "Attendance",
+            "Fee Management",
+            "Reports"
+        );
+
+    }
+
+
+    if (customer.industry === "Healthcare") {
+
+        suggestions.push(
+            "Patient Management",
+            "Appointment Management",
+            "Billing",
+            "Reports"
+        );
+
+    }
+
+
+    return [...new Set(suggestions)];
+
+}
+
+
+/* =========================================================
+   ACCEPT YES ANSWER
+========================================================= */
+
+function handleYes() {
+
+    if (
+        customer.lastQuestion === "features"
+    ) {
+
+        const suggestions =
+            getSuggestedFeatures();
+
+        suggestions.forEach(item => {
+
+            addUnique(
+                customer.features,
+                item
+            );
+
+        });
+
+        return true;
+
+    }
+
+
+    if (
+        customer.lastQuestion === "platform"
+    ) {
+
+        return false;
+
+    }
+
+
+    if (
+        customer.lastQuestion === "currentSystem"
+    ) {
+
+        return false;
+
+    }
+
+
+    return false;
+
+}
+
+
+/* =========================================================
+   GENERAL FAQ ANSWERS
+========================================================= */
+
+function answerGeneralQuestion(question) {
+
+    if (question === "gst") {
+
+        return (
+            "GST-na Goods and Services Tax sir. " +
+            "Billing software-la GST invoice generate panna, " +
+            "tax calculation and GST-related reports maintain panna use aagum."
+        );
+
+    }
+
+
+    if (question === "barcode") {
+
+        return (
+            "Barcode use pannina product-a quickly identify panni " +
+            "sales and stock entry fast-ah manage panna mudiyum sir. " +
+            "Inventory-heavy business-ku useful-ah irukkum."
+        );
+
+    }
+
+
+    if (question === "crm") {
+
+        return (
+            "CRM-na Customer Relationship Management sir. " +
+            "Customer details, enquiries, follow-ups, sales opportunities " +
+            "and customer history manage panna use pannuvanga."
+        );
+
+    }
+
+
+    if (question === "erp") {
+
+        return (
+            "ERP-na different business operations-a ஒரே system-la manage panna use aagura software approach sir. " +
+            "For example accounts, inventory, purchase, sales, HR and production போன்ற modules-a ஒரே system-la connect panna mudiyum."
+        );
+
+    }
+
+
+    if (question === "cloud") {
+
+        return (
+            "Cloud software-na data and application internet-based server-la maintain pannura setup sir. " +
+            "Configured properly-na different locations-la irundhu access panna mudiyum."
+        );
+
+    }
+
+
+    if (question === "multiuser") {
+
+        return (
+            "Multi-user setup-na different users-ku separate login and permissions kudukka mudiyum sir. " +
+            "For example admin, accounts, sales and store users-ku different access levels set panna mudiyum."
+        );
+
+    }
+
+
+    if (question === "mobile") {
+
+        return (
+            "ஆம் sir, mobile access requirement-a software design-la include panna mudiyum. " +
+            "Exact mobile/web setup unga requirement and project scope-ku depend aagum."
+        );
+
+    }
+
+
+    if (question === "security") {
+
+        return (
+            "Data security-ku user login, access permissions and backup போன்ற options design-la include panna mudiyum sir. " +
+            "Exact security setup project requirement-ku depend aagum."
+        );
+
+    }
+
+
+    if (question === "demo") {
+
+        return (
+            "Demo arrange panna mudiyum sir. " +
+            "Unga business type and required modules konjam confirm pannina, " +
+            "suitable demo / discussion-ku requirement prepare pannalaam."
+        );
+
+    }
+
+
+    return "";
+
+}
+
+
+/* =========================================================
+   BUILD REQUIREMENT SUMMARY
+========================================================= */
+
+function buildSummary() {
+
+    const parts = [];
+
+
+    if (customer.companyName) {
+
+        parts.push(
+            "Company: " + customer.companyName
+        );
+
+    }
+
+
+    if (customer.industry) {
+
+        parts.push(
+            "Industry: " + customer.industry
+        );
+
+    }
+
+
+    if (customer.modules.length > 0) {
+
+        parts.push(
+            "Software: " +
+            customer.modules.join(", ")
+        );
+
+    }
+
+
+    if (customer.features.length > 0) {
+
+        parts.push(
+            "Features: " +
+            customer.features.join(", ")
+        );
+
+    }
+
+
+    if (customer.users) {
+
+        parts.push(
+            "Users: " +
+            customer.users
+        );
+
+    }
+
+
+    if (customer.platform) {
+
+        parts.push(
+            "Platform: " +
+            customer.platform
+        );
+
+    }
+
+
+    if (customer.currentSystem) {
+
+        parts.push(
+            "Current system: " +
+            customer.currentSystem
+        );
+
+    }
+
+
+    return parts.join("\n");
+
+}
+
+
+/* =========================================================
+   NEXT SALES STEP
+========================================================= */
+
+function getNextSalesStep() {
+
+
+    /* SOFTWARE */
+
+    if (
+        customer.modules.length === 0
+    ) {
+
+        customer.lastQuestion = "modules";
+
+        return (
+            "Sure sir. Unga business-la ippo endha process-a software-la manage panna virumbureenga? " +
+            "Billing, inventory, accounts, payroll, CRM, production அல்லது வேறு requirement?"
+        );
+
+    }
+
+
+    /* INDUSTRY */
+
+    if (
+        !customer.industry &&
+        customer.modules.some(m =>
+            [
+                "Billing",
+                "Inventory",
+                "Payroll",
+                "Accounting",
+                "CRM",
+                "ERP"
+            ].includes(m)
+        )
+    ) {
+
+        customer.lastQuestion = "industry";
+
+        return (
+            "Okay sir 👍 " +
+            customer.modules.join(" + ") +
+            " requirement note panniten. " +
+            "Unga business / industry enna sir?"
+        );
+
+    }
+
+
+    /* FEATURES */
+
+    if (
         customer.features.length === 0
-      ) {
-
-        customer.features = [
-
-          "stock management",
-          "GST",
-          "barcode",
-          "reports"
-
-        ];
-
-        customer.stage =
-          "users";
-
-        return "Super sir 👍 Billing, stock management, GST, barcode and reports ellam requirement-la note panniten. Approximately evlo users software use panna poranga sir?";
-
-      }
-
-
-      customer.stage =
-        "users";
-
-      return "Okay sir 👍 Requirement note panniten. Approximately evlo users software use panna poranga?";
-
-    }
-
-
-    /* Generic software */
-
-    customer.stage =
-      "features";
-
-    return "Sure sir 👍 Requirement note panniten. Software-la main-a enna features venum-nu sollunga. Unga current process-la enna problem irukku-nu sonnalum naan better-ah understand pannikkalaam.";
-
-  }
-
-
-  /* =========================================
-     NO ANSWER
-  ========================================= */
-
-  if (isNo(text)) {
-
-    if (
-      customer.softwareType === "billing"
     ) {
 
-      customer.stage =
-        "features";
+        const suggestions =
+            getSuggestedFeatures();
 
-      return "Okay sir 👍 No problem. Billing basic requirement-a start pannalaam. GST, stock, reports, customer management-la edhu important sir?";
+        customer.lastQuestion = "features";
+
+
+        if (suggestions.length > 0) {
+
+            return (
+                "Okay sir 👍 unga requirement-ku " +
+                suggestions.slice(0, 7).join(", ") +
+                " போன்ற features useful-ah இருக்கும். " +
+                "இவைகளும் தேவைப்படுமா sir?"
+            );
+
+        }
+
+
+        return (
+            "Okay sir 👍 software requirement note panniten. " +
+            "Ungalukku முக்கியமாக என்ன features தேவை sir?"
+        );
 
     }
 
 
-    return "Okay sir 👍 No problem. Basic requirement-la start pannalaam. Unga main requirement enna sir?";
-
-  }
-
-
-  /* =========================================
-     BILLING SOFTWARE
-  ========================================= */
-
-  if (
-    customer.softwareType === "billing"
-  ) {
+    /* USERS */
 
     if (
-      customer.features.length === 0
+        !customer.users
     ) {
 
-      customer.stage =
-        "features";
+        customer.lastQuestion = "users";
 
-      return "Okay sir 👍 Billing software-ku GST, stock management, barcode, purchase, sales, customer management and reports madhiri features add pannalaam. Unga business-ku edhu important sir?";
+        return (
+            "Super sir 👍 required modules and features note panniten. " +
+            "Approximately evlo users software use panna poranga sir?"
+        );
 
     }
 
+
+    /* PLATFORM */
 
     if (
-      customer.stage === "users"
+        !customer.platform
     ) {
 
-      const number =
-        detectNumber(text);
+        customer.lastQuestion = "platform";
 
-      if (number) {
-
-        customer.users =
-          number;
-
-        customer.stage =
-          "platform";
-
-        return "Okay sir 👍 Approximately " +
-          number +
-          " users-nu note panniten. Software computer-la use panna poringala, mobile-la use panna poringala, illa rendu platform-um venuma?";
-
-      }
+        return (
+            "Okay sir 👍 " +
+            customer.users +
+            " users-nu note panniten. " +
+            "Software computer-la use panna poringala, mobile-la use panna poringala, illa rendu platform-um venuma?"
+        );
 
     }
 
+
+    /* CURRENT SYSTEM */
 
     if (
-      customer.stage === "platform"
+        !customer.currentSystem
     ) {
 
-      if (customer.platform) {
+        customer.lastQuestion = "currentSystem";
 
-        customer.stage =
-          "currentSystem";
-
-        return "Perfect sir 👍 Platform requirement-um note panniten. Ippo existing billing software use panreengala, illa currently manual-ah manage panreengala?";
-
-      }
-
-      return "Sir computer, mobile, illa both — edhula use panna poringa-nu sollunga.";
+        return (
+            "Perfect sir 👍 platform requirement-um note panniten. " +
+            "Ippo indha process manual / Excel-la manage panreengala, " +
+            "illa already existing software use panreengala?"
+        );
 
     }
 
 
-    if (
-      customer.stage === "currentSystem"
-    ) {
-
-      customer.currentSystem =
-        text;
-
-      customer.stage =
-        "complete";
-
-      return "Okay sir 👍 Unga requirement clear-ah note panniten. " +
-        softwareName(customer.softwareType) +
-        " with " +
-        customer.features.join(", ") +
-        " requirement. KIKT team unga business-ku suitable solution and quotation details share pannalaam. Contact details share pannunga sir.";
-
-    }
-
-
-    return "Okay sir 👍 Unga " +
-      customer.industry +
-      " business-ku billing requirement note panniten. Innum edhavadhu specific feature venuma sir?";
-
-  }
-
-
-  /* =========================================
-     INVENTORY
-  ========================================= */
-
-  if (
-    customer.softwareType === "inventory"
-  ) {
-
-    if (
-      customer.features.length === 0
-    ) {
-
-      return "Sure sir 👍 Inventory software-la purchase, stock in/out, low-stock alert, supplier management, sales and reports add pannalaam. Unga business-la mainly enna type products manage panreenga?";
-
-    }
-
-
-    return "Okay sir 👍 Inventory requirement note panniten. Approximately evlo users software use panna poranga?";
-
-  }
-
-
-  /* =========================================
-     PAYROLL
-  ========================================= */
-
-  if (
-    customer.softwareType === "payroll"
-  ) {
-
-    customer.stage =
-      "employees";
-
-    const number =
-      detectNumber(text);
-
-    if (number) {
-
-      customer.employees =
-        number;
-
-      return "Okay sir 👍 Approximately " +
-        number +
-        " employees-nu note panniten. Attendance, salary calculation, payslip and leave management venuma sir?";
-
-    }
-
-
-    return "Sure sir 👍 Payroll software-la attendance, salary calculation, payslip, leave and employee management handle pannalaam. Unga company-la approximately evlo employees irukanga?";
-
-  }
-
-
-  /* =========================================
-     ACCOUNTING
-  ========================================= */
-
-  if (
-    customer.softwareType === "accounting"
-  ) {
-
-    return "Sure sir 👍 Accounting software-la sales, purchase, expenses, GST, receivables, payables and financial reports manage pannalaam. Unga current accounts process manual-ah irukka, illa existing software use panreengala?";
-
-  }
-
-
-  /* =========================================
-     CRM
-  ========================================= */
-
-  if (
-    customer.softwareType === "crm"
-  ) {
-
-    return "Sure sir 👍 CRM software-la customer details, enquiry follow-up, sales pipeline, reminders and reports manage pannalaam. Unga team-la approximately evlo people customer enquiries handle panranga?";
-
-  }
-
-
-  /* =========================================
-     WEBSITE
-  ========================================= */
-
-  if (
-    customer.softwareType === "website"
-  ) {
-
-    return "Sure sir 👍 Website develop pannalaam. Unga business/company information website venuma, online enquiry website venuma, illa e-commerce website venuma?";
-
-  }
-
-
-  /* =========================================
-     MOBILE APP
-  ========================================= */
-
-  if (
-    customer.softwareType === "mobile_app"
-  ) {
-
-    return "Sure sir 👍 Mobile application develop pannalaam. App-la main-a enna functionality venum sir? Customer app, business management app, booking app, delivery app, illa completely custom requirement-aa?";
-
-  }
-
-
-  /* =========================================
-     EDUCATION
-  ========================================= */
-
-  if (
-    customer.softwareType === "education"
-  ) {
-
-    return "Sure sir 👍 Education management software-la student management, fees, attendance, exams, staff and reports manage pannalaam. Unga requirement-la main-a endha module important sir?";
-
-  }
-
-
-  /* =========================================
-     HEALTHCARE
-  ========================================= */
-
-  if (
-    customer.softwareType === "healthcare"
-  ) {
-
-    return "Sure sir 👍 Hospital / clinic management software-la patient records, appointment, billing, pharmacy and reports manage pannalaam. Unga requirement-la main-a endha module venum sir?";
-
-  }
-
-
-  /* =========================================
-     MANUFACTURING
-  ========================================= */
-
-  if (
-    customer.softwareType === "manufacturing"
-  ) {
-
-    return "Sure sir 👍 Manufacturing software-la production, raw material, stock, purchase, sales and reports manage pannalaam. Unga production process-la main-a enna area automate panna virumbureenga sir?";
-
-  }
-
-
-  /* =========================================
-     ERP
-  ========================================= */
-
-  if (
-    customer.softwareType === "erp"
-  ) {
-
-    return "Sure sir 👍 ERP solution-la multiple business operations integrate pannalaam. Unga company-la billing, inventory, accounts, HR, purchase, sales — edhula first priority sir?";
-
-  }
-
-
-  /* =========================================
-     HR
-  ========================================= */
-
-  if (
-    customer.softwareType === "hr"
-  ) {
-
-    return "Sure sir 👍 HR software-la employee records, attendance, leave, payroll and reports manage pannalaam. Unga company-la approximately evlo employees irukanga?";
-
-  }
-
-
-  /* =========================================
-     GENERIC FALLBACK
-  ========================================= */
-
-  return "Okay sir 👍 Purinjukitten. Unga requirement-a konjam detail-ah sollunga. Current process-la enna problem irukku, and software-la enna automate panna virumbureenga?";
-
+    /* EVERYTHING KNOWN */
+
+    customer.lastQuestion = "complete";
+
+    return (
+        "Super sir 👍 unga basic requirement complete-ah understand panniten. " +
+        "Quotation prepare panna scope clear-ah இருக்கு. " +
+        "Unga requirement summary:\n\n" +
+        buildSummary() +
+        "\n\n" +
+        "இதன் அடிப்படையில் KIKT team quotation / demo discussion continue pannalaam sir. " +
+        "Contact number or WhatsApp number share pannunga."
+    );
 
 }
 
 
 /* =========================================================
-   SEND MESSAGE
+   PRICE RESPONSE
 ========================================================= */
 
-async function sendMessage() {
+function priceResponse() {
 
-  const text =
-    messageBox.value.trim();
+    customer.priceAsked = true;
 
-
-  if (!text) {
-
-    statusBox.textContent =
-      "Please type a message first.";
-
-    return;
-
-  }
+    const summary = buildSummary();
 
 
-  if (isThinking) {
+    if (
+        customer.modules.length === 0
+    ) {
 
-    statusBox.textContent =
-      "Please wait, Bella is preparing the reply...";
+        customer.lastQuestion = "modules";
 
-    return;
+        return (
+            "Sure sir 👍 software cost requirement and modules-க்கு depend aagum. " +
+            "Billing, inventory, payroll, CRM, accounting போன்ற எந்த software தேவைன்னு first சொல்லுங்க. " +
+            "அதுக்கேற்ப quotation scope identify pannalaam."
+        );
 
-  }
-
-
-  messageBox.value = "";
-
-
-  addMessage(
-    "Customer",
-    text
-  );
+    }
 
 
-  conversation.push({
+    return (
+        "Sure sir 👍 software cost exact-ah சொல்லணும்னா required modules, " +
+        "features, users and platform scope consider pannanum. " +
+        "Ippo naan note pannirukkura requirement:\n\n" +
+        summary +
+        "\n\n" +
+        "Indha scope confirm pannina KIKT team suitable quotation prepare panna mudiyum sir. " +
+        "Exact price-ai guess pannaama requirement-based quotation dhaan share pannuvom."
+    );
 
-    role: "user",
-
-    content: text
-
-  });
-
-
-  isThinking = true;
-
-  sendButton.disabled = true;
-
-  statusBox.textContent =
-    "Understanding your requirement...";
+}
 
 
-  try {
+/* =========================================================
+   MAIN CUSTOMER MESSAGE PROCESSOR
+========================================================= */
 
-    /*
-      IMPORTANT:
-      No OpenAI API here.
-      This is local conversation logic.
-    */
+function processCustomerMessage(originalText) {
+
+    const text = originalText.trim();
+
+    const t = normalize(text);
+
+
+    /* ============================================
+       1. DETECT DIRECT QUESTIONS FIRST
+    ============================================ */
+
+    const generalQuestion =
+        detectQuestion(text);
+
+
+    if (generalQuestion) {
+
+        const answer =
+            answerGeneralQuestion(generalQuestion);
+
+
+        if (answer) {
+
+            addMessage("AI", answer);
+
+            addConversation(
+                "assistant",
+                answer
+            );
+
+            speak(answer);
+
+
+            /*
+             * IMPORTANT:
+             * Answer customer question first.
+             * Then continue sales process.
+             */
+
+            setTimeout(() => {
+
+                const next =
+                    getNextSalesStep();
+
+                addMessage("AI", next);
+
+                addConversation(
+                    "assistant",
+                    next
+                );
+
+                speak(next);
+
+            }, 1200);
+
+
+            return;
+
+        }
+
+    }
+
+
+    /* ============================================
+       2. PRICE QUESTION
+    ============================================ */
+
+    if (isPriceQuestion(text)) {
+
+        /*
+         * First extract information that exists
+         * in same message.
+         */
+
+        updateCustomerMemory(text);
+
+
+        const answer =
+            priceResponse();
+
+
+        addMessage("AI", answer);
+
+        addConversation(
+            "assistant",
+            answer
+        );
+
+        speak(answer);
+
+        return;
+
+    }
+
+
+    /* ============================================
+       3. UPDATE ALL AVAILABLE CONTEXT
+    ============================================ */
+
+    updateCustomerMemory(text);
+
+
+    /* ============================================
+       4. YES ANSWER
+    ============================================ */
+
+    if (
+        /^(yes|yes sir|yeah|ok|okay|sure|ama|aama|correct|right|venum|venum sir)$/i
+            .test(t)
+    ) {
+
+        const accepted =
+            handleYes();
+
+
+        if (accepted) {
+
+            const next =
+                getNextSalesStep();
+
+
+            addMessage("AI", next);
+
+            addConversation(
+                "assistant",
+                next
+            );
+
+            speak(next);
+
+            return;
+
+        }
+
+    }
+
+
+    /* ============================================
+       5. NOT SURE
+    ============================================ */
+
+    if (
+        t.includes("not sure") ||
+        t.includes("dont know") ||
+        t.includes("don't know") ||
+        t.includes("theriyala") ||
+        t.includes("therila") ||
+        t.includes("suggest") ||
+        t.includes("you suggest")
+    ) {
+
+        const suggestions =
+            getSuggestedFeatures();
+
+
+        const answer =
+            suggestions.length > 0
+
+            ?
+
+            (
+                "No problem sir 👍 " +
+                "Unga current requirement based on " +
+                suggestions.slice(0, 7).join(", ") +
+                " போன்ற features consider pannalaam. " +
+                "Ithu business process-ku useful-ah இருக்கும். " +
+                "Idhula தேவையானவற்றை include pannalaam."
+            )
+
+            :
+
+            (
+                "No problem sir 👍 unga business process based on suitable features suggest pannalaam. " +
+                "First current process eppadi manage panreenga-nu sollunga."
+            );
+
+
+        addMessage("AI", answer);
+
+        addConversation(
+            "assistant",
+            answer
+        );
+
+        speak(answer);
+
+
+        setTimeout(() => {
+
+            const next =
+                getNextSalesStep();
+
+            addMessage("AI", next);
+
+            addConversation(
+                "assistant",
+                next
+            );
+
+            speak(next);
+
+        }, 1200);
+
+
+        return;
+
+    }
+
+
+    /* ============================================
+       6. NORMAL SALES FLOW
+    ============================================ */
 
     const reply =
-      getSmartReply(text);
+        getNextSalesStep();
 
 
-    conversation.push({
+    addMessage("AI", reply);
 
-      role: "assistant",
+    addConversation(
+        "assistant",
+        reply
+    );
 
-      content: reply
+    speak(reply);
+
+}
+
+
+/* =========================================================
+   UPDATE CUSTOMER MEMORY
+========================================================= */
+
+function updateCustomerMemory(text) {
+
+
+    /* MODULES */
+
+    const modules =
+        detectModules(text);
+
+
+    modules.forEach(module => {
+
+        addUnique(
+            customer.modules,
+            module
+        );
 
     });
 
 
-    addMessage(
-      "KIKT AI",
-      reply
-    );
+    /* INDUSTRY */
+
+    const industry =
+        detectIndustry(text);
 
 
-    await speak(reply);
+    if (industry) {
 
-
-  } catch (error) {
-
-    console.error(error);
-
-    statusBox.textContent =
-      "Reply error: " +
-      error.message;
-
-  }
-
-
-  isThinking = false;
-
-  sendButton.disabled = false;
-
-}
-
-
-/* =========================================================
-   ENTER KEY
-========================================================= */
-
-messageBox.addEventListener(
-  "keydown",
-  function(event) {
-
-    if (event.key === "Enter") {
-
-      event.preventDefault();
-
-      sendMessage();
+        customer.industry = industry;
 
     }
 
-  }
-);
+
+    /* FEATURES */
+
+    const features =
+        detectFeatures(text);
 
 
-/* =========================================================
-   MICROPHONE
-========================================================= */
+    features.forEach(feature => {
 
-function startMic() {
+        addUnique(
+            customer.features,
+            feature
+        );
 
-  const SpeechRecognition =
-    window.SpeechRecognition ||
-    window.webkitSpeechRecognition;
-
-
-  if (!SpeechRecognition) {
-
-    statusBox.textContent =
-      "Speech recognition not supported. Please type your message.";
-
-    return;
-
-  }
+    });
 
 
-  if (isThinking) {
+    /* USERS */
 
-    statusBox.textContent =
-      "Please wait for the current reply.";
-
-    return;
-
-  }
+    const users =
+        detectUsers(text);
 
 
-  try {
+    if (users) {
 
-    recognition =
-      new SpeechRecognition();
+        customer.users = users;
 
-
-    recognition.lang =
-      "ta-IN";
+    }
 
 
-    recognition.continuous =
-      false;
+    /* PLATFORM */
+
+    const platform =
+        detectPlatform(text);
 
 
-    recognition.interimResults =
-      false;
+    if (platform) {
+
+        customer.platform = platform;
+
+    }
 
 
-    recognition.onstart = () => {
+    /* CURRENT SYSTEM */
 
-      statusBox.textContent =
-        "Listening... Please speak.";
-
-    };
+    const currentSystem =
+        detectCurrentSystem(text);
 
 
-    recognition.onresult =
-      (event) => {
+    if (currentSystem) {
 
-        const spokenText =
-          event.results[0][0].transcript;
+        customer.currentSystem =
+            currentSystem;
 
-
-        messageBox.value =
-          spokenText;
+    }
 
 
-        statusBox.textContent =
-          "Heard: " +
-          spokenText;
+    /* CONTACT NUMBER */
+
+    const phoneMatch =
+        text.match(
+            /(?:\+91[\s-]?)?[6-9]\d{9}/
+        );
 
 
-        sendMessage();
+    if (phoneMatch) {
 
-      };
+        customer.contact =
+            phoneMatch[0];
 
-
-    recognition.onerror =
-      (event) => {
-
-        statusBox.textContent =
-          "Mic error: " +
-          event.error +
-          ". You can type your message instead.";
-
-      };
+    }
 
 
-    recognition.onend = () => {
+    /* EMAIL */
 
-      recognition = null;
-
-    };
-
-
-    recognition.start();
+    const emailMatch =
+        text.match(
+            /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i
+        );
 
 
-  } catch (error) {
+    if (emailMatch) {
 
-    statusBox.textContent =
-      "Mic could not start. Please type your message.";
+        customer.contact =
+            emailMatch[0];
 
-  }
+    }
+
+
+    /* COMPANY NAME */
+
+    if (
+        normalize(text).includes("company name")
+    ) {
+
+        customer.companyName =
+            text;
+
+    }
+
+
+    /* EMPLOYEE COUNT */
+
+    const employeeMatch =
+        normalize(text).match(
+            /(\d+)\s*(employees?|staff|workers?)/
+        );
+
+
+    if (employeeMatch) {
+
+        customer.employees =
+            employeeMatch[1];
+
+    }
 
 }
 
 
 /* =========================================================
-   STOP VOICE
+   DEBUG - OPTIONAL
 ========================================================= */
 
-function stopAI() {
+function showCustomerMemory() {
 
-  isStopped = true;
-
-
-  if (recognition) {
-
-    recognition.stop();
-
-    recognition = null;
-
-  }
-
-
-  stopCurrentAudio();
-
-
-  statusBox.textContent =
-    "Voice stopped.";
+    console.log(
+        "KIKT CUSTOMER MEMORY",
+        customer
+    );
 
 }
-
-
-/* =========================================================
-   INITIAL STATE
-========================================================= */
-
-conversation = [
-
-  {
-    role: "assistant",
-
-    content: greeting
-
-  }
-
-];
 
 </script>
 
