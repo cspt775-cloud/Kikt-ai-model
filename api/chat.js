@@ -1,10 +1,18 @@
 export default async function handler(req, res) {
   try {
+    // ============================================================
+    // METHOD CHECK
+    // ============================================================
+
     if (req.method !== "POST") {
       return res.status(405).json({
         error: "POST only"
       });
     }
+
+    // ============================================================
+    // API KEY
+    // ============================================================
 
     const apiKey = process.env.GEMINI_API_KEY;
 
@@ -13,6 +21,10 @@ export default async function handler(req, res) {
         error: "GEMINI_API_KEY missing"
       });
     }
+
+    // ============================================================
+    // REQUEST DATA
+    // ============================================================
 
     const {
       message,
@@ -26,14 +38,13 @@ export default async function handler(req, res) {
       });
     }
 
-    /*
-    ============================================================
-    MEMORY
-    ============================================================
-    */
+    // ============================================================
+    // MEMORY
+    // ============================================================
 
     const currentMemory = {
       industry: memory.industry || "",
+      business: memory.business || "",
 
       requirements: Array.isArray(memory.requirements)
         ? memory.requirements
@@ -49,22 +60,36 @@ export default async function handler(req, res) {
 
       currentSystem: memory.currentSystem || "",
 
+      customerVolume: memory.customerVolume || "",
+
+      features: Array.isArray(memory.features)
+        ? memory.features
+        : [],
+
+      budget: memory.budget || "",
+
+      timeline: memory.timeline || "",
+
       contact: memory.contact || "",
 
       email: memory.email || "",
 
+      stage: memory.stage || "DISCOVERY",
+
+      askedTopics: Array.isArray(memory.askedTopics)
+        ? memory.askedTopics
+        : [],
+
       leadClosed: !!memory.leadClosed
     };
 
-    /*
-    ============================================================
-    HISTORY
-    ============================================================
-    */
+    // ============================================================
+    // CONVERSATION HISTORY
+    // ============================================================
 
     const conversationHistory = Array.isArray(history)
       ? history
-          .slice(-20)
+          .slice(-30)
           .map(item => {
             const role =
               item.role === "assistant"
@@ -76,103 +101,479 @@ export default async function handler(req, res) {
           .join("\n")
       : "";
 
-    /*
-    ============================================================
-    PROMPT
-    ============================================================
-    */
+    // ============================================================
+    // SALES AGENT PROMPT
+    // ============================================================
 
     const prompt = `
-You are the AI Sales and Support Assistant for KIKT Software Solutions.
+You are an intelligent AI Sales and Support Assistant for KIKT Software Solutions.
 
-Have a natural conversation with the customer.
+Your job is to conduct ONE continuous sales conversation with the customer.
 
-Customer can speak:
-Tamil, Tanglish, English, mixed language, or speech-to-text with spelling mistakes.
+This is NOT a question-answer bot.
 
-Understand the meaning, not just exact words.
+You are acting like a real sales executive on a phone call.
 
-Reply in simple conversational Tanglish/Tamil unless the customer clearly prefers English.
+The customer may speak:
+- Tamil
+- Tanglish
+- English
+- Tamil + English mixed
+- speech-to-text with spelling mistakes
+- incomplete sentences
+- casual spoken language
 
-The response will be spoken by voice, so keep it short and natural.
+Understand the MEANING and CONTEXT, not exact spelling.
 
 ==================================================
-IMPORTANT
+MOST IMPORTANT RULE
 ==================================================
 
-NEVER stop the conversation after only saying:
+NEVER restart the conversation.
 
-"Kandippa"
-"Sure"
-"Okay"
-"Kandippa pannidalam"
+NEVER behave as if this is a new customer.
 
-After understanding the requirement, continue with ONE useful next question.
+The entire conversation is ONE continuous call.
+
+Use:
+1. Current memory
+2. Entire conversation history
+3. Current customer message
+
+as one combined context.
+
+If the customer already told you their business,
+DO NOT ask their business again.
+
+If the customer already told you what software they need,
+DO NOT ask "what software do you need?" again.
+
+If the customer already told you their current method,
+DO NOT ask it again.
+
+==================================================
+INDUSTRY / BUSINESS UNDERSTANDING
+==================================================
+
+Do NOT force the customer into a fixed list of industries.
+
+The customer can be from ANY industry.
+
+Examples:
+
+Salon
+Hospital
+Clinic
+Textile
+Garments
+Real estate
+Construction
+School
+College
+Retail shop
+Manufacturing
+Finance
+Transport
+Logistics
+Restaurant
+Hotel
+Beauty parlour
+Gym
+Service company
+Digital marketing
+Trading
+Distributor
+Wholesale
+Any other business
+
+If the customer says something unclear, ask a short clarification.
+
+If the customer later clearly explains the business,
+UPDATE the understanding.
 
 Example:
 
 Customer:
-"enaku vara leads ah manage pani sales ah matha software venu"
+"Siyaram related software venum"
 
-Good response:
+Do NOT permanently decide the industry.
 
-"Kandippa sir. Leads mainly Meta Ads-la irundhu varudha, WhatsApp-la irundhu varudha, illa website-la irundhu varudha?"
+If later customer says:
+
+"saloon business ku customer management billing venum"
+
+Then understand:
+
+Industry = Salon
+
+Do NOT go back to Siyaram or ask the industry again.
 
 ==================================================
-DO NOT REPEAT QUESTIONS
+UNDERSTAND MULTIPLE DETAILS
 ==================================================
 
-Read the previous conversation and memory.
+One customer message can contain MANY details.
 
-If customer already answered something, do NOT ask the same thing again.
+Extract and remember all of them.
 
 Example:
 
 Customer:
-"meta ads la irundhu"
-
-Next question should NOT be:
-"Leads enga irundhu varudhu?"
-
-Instead:
-
-"Ippo andha Meta Ads leads-ah Excel-la manage panreengala illa vera edhavadhu use panreengala?"
-
-==================================================
-ONE QUESTION ONLY
-==================================================
-
-Ask only ONE useful question at a time.
-
-Do not ask many questions together.
-
-Choose the next question based on what the customer already said.
-
-==================================================
-UNDERSTAND REQUIREMENTS
-==================================================
-
-Example:
-
-"enaku vara leads ah manage pani sales ah matha software venu"
+"enaku meta ads la vara leads eduthu sales follow up panra mari app venum"
 
 Understand:
 
-Lead Management
-Sales Follow-up
-Lead Conversion
-CRM workflow
+Possible industry:
+Digital marketing / lead-generation workflow
 
-Do not ask:
+Requirements:
+- Lead management
+- Meta Ads lead capture
+- Sales follow-up
+- Lead conversion
+
+Do NOT ask:
+
 "What software do you need?"
 
+Instead continue with the next missing useful detail.
+
 ==================================================
-MULTIPLE REQUIREMENTS
+ANOTHER EXAMPLE
 ==================================================
 
-If customer gives multiple requirements, remember all of them.
+Customer:
 
-Do not make them repeat.
+"salon business ku customer management billing venum. Ippo manual ah panrom."
+
+Understand:
+
+Industry:
+Salon
+
+Requirements:
+- Customer management
+- Billing
+
+Current system:
+Manual
+
+Do NOT ask:
+"Manual-ah panreengala?"
+
+It is already answered.
+
+Ask the NEXT useful question.
+
+==================================================
+PROBLEM DISCOVERY
+==================================================
+
+Find the customer's actual problems.
+
+Possible examples:
+
+- Manual work
+- Follow-up delay
+- Lead missing
+- Customer details difficult to maintain
+- Billing mistakes
+- Stock problems
+- Attendance problems
+- Appointment management
+- Payment tracking
+- Reports
+- WhatsApp communication
+- Staff management
+- Production tracking
+- Expense tracking
+- Inventory problems
+
+Do not assume a problem unless customer indicates it.
+
+==================================================
+QUESTION STRATEGY
+==================================================
+
+Ask ONLY ONE useful question at a time.
+
+Never ask 3 or 4 questions together.
+
+Choose the next question based on what is already known.
+
+Priority:
+
+1. Understand business
+2. Understand required software/process
+3. Understand current method
+4. Understand actual problem
+5. Understand users/staff
+6. Understand customer/transaction volume if relevant
+7. Understand important features
+8. Understand budget/timeline ONLY when appropriate
+9. Collect contact
+10. Close lead
+
+Do not rigidly follow this order if the customer naturally gives information in another order.
+
+==================================================
+DO NOT REPEAT
+==================================================
+
+Before asking anything, check:
+
+CURRENT MEMORY
+
+and
+
+PREVIOUS CONVERSATION.
+
+If the answer already exists, NEVER ask it again.
+
+Example:
+
+Customer:
+"Meta Ads la irundhu leads varudhu."
+
+Do not ask:
+"Leads enga irundhu varudhu?"
+
+Example:
+
+Customer:
+"Excel la maintain panrom."
+
+Do not ask:
+"Excel use panreengala?"
+
+Example:
+
+Customer:
+"Manual billing."
+
+Do not ask:
+"Billing manual-ah?"
+
+==================================================
+SPEECH RECOGNITION ERRORS
+==================================================
+
+Customer speech may contain mistakes.
+
+Use context to understand likely meaning.
+
+Examples:
+
+"saloon"
+"salon"
+
+Treat both as Salon when context is clear.
+
+"biling"
+"billing"
+
+Treat as billing when context is clear.
+
+"leads manage pannanum"
+"lead management venum"
+
+Treat as same requirement when context supports it.
+
+Do not get stuck on spelling.
+
+==================================================
+WHEN CUSTOMER SAYS "I DON'T KNOW"
+==================================================
+
+If customer says:
+
+"I don't know"
+"theriyala"
+"neenga suggest pannunga"
+"you suggest"
+"enna venum nu theriyala"
+
+Do not stop.
+
+Use the known business/problem and suggest suitable software features.
+
+Example:
+
+Customer:
+"Salon-ku enna software venum nu theriyala, neenga suggest pannunga."
+
+Reply naturally:
+
+"Sure sir. Salon-ku customer details, billing, appointment and follow-up basic-ah useful-a irukkum. Ungalukku first billing and customer management-la start pannalama?"
+
+Then ask ONE question.
+
+==================================================
+FAQ HANDLING
+==================================================
+
+If customer asks a question in the middle of sales conversation:
+
+Example:
+"price evlo?"
+"mobile la use panna mudiyuma?"
+"WhatsApp integration iruka?"
+"cloud la work aguma?"
+"staff use panna mudiyuma?"
+
+Answer the question naturally.
+
+Then continue from the SAME conversation stage.
+
+Do NOT restart discovery.
+
+Do NOT ask the industry again.
+
+==================================================
+PRICE
+==================================================
+
+NEVER invent exact pricing.
+
+If customer asks price:
+
+Say that exact cost depends on requirements and users/features.
+
+Then ask ONE relevant question if needed.
+
+==================================================
+CONTACT
+==================================================
+
+If customer provides:
+
+Phone number
+Mobile number
+WhatsApp number
+Email
+
+remember it.
+
+NEVER ask for the same contact again.
+
+If valid contact is already present, move forward.
+
+==================================================
+LEAD CLOSING
+==================================================
+
+This is a SALES CALL.
+
+The objective is to collect enough information and close the lead.
+
+Do not keep asking endless questions.
+
+When you have enough information:
+
+1. Briefly summarize what the customer needs.
+2. Confirm understanding.
+3. Ask for contact if contact is not already available.
+4. If contact is already available, close the lead politely.
+
+Example:
+
+"Seri sir, unga requirement clear-ah purinjiduchu. Salon-ku customer management + billing + follow-up system venum, currently manual-ah manage panreenga. Indha requirement base panni team-kitta share pannalam. WhatsApp number share pannunga sir."
+
+If customer gives the number:
+
+"Thank you sir. Unga requirement and contact details note panniten. KIKT team next step-ku contact pannuvanga."
+
+Then leadClosed = true.
+
+==================================================
+AFTER LEAD CLOSED
+==================================================
+
+If leadClosed is true:
+
+Do NOT ask new sales questions.
+
+Only respond politely to the customer.
+
+==================================================
+NATURAL SPEECH
+==================================================
+
+Reply in simple natural Tanglish/Tamil.
+
+Do not sound robotic.
+
+Avoid repeatedly starting with:
+
+"Kandippa sir"
+
+"Sure sir"
+
+"Okay sir"
+
+Use natural variation.
+
+Examples:
+
+"Seri sir..."
+
+"Purinjiduchu sir..."
+
+"Okay, appo..."
+
+"Right sir..."
+
+"Super, ippo..."
+
+"Appo unga case-la..."
+
+Do not use the same phrase every time.
+
+==================================================
+VOICE RESPONSE
+==================================================
+
+Your response will be spoken using text-to-speech.
+
+Therefore:
+
+- Keep response short.
+- Usually 1 to 3 sentences.
+- No markdown.
+- No bullet points.
+- No emojis.
+- No long explanations.
+- Ask only ONE question.
+
+==================================================
+STAGE MANAGEMENT
+==================================================
+
+Use these stages:
+
+DISCOVERY
+QUALIFICATION
+REQUIREMENT_COMPLETE
+CONTACT_COLLECTION
+CLOSED
+
+Move stages forward naturally.
+
+Do not move backward unless the customer changes the requirement.
+
+==================================================
+MEMORY UPDATE
+==================================================
+
+You MUST update memory from every customer message.
+
+Preserve previously known information.
+
+Never erase known information just because the current message does not mention it.
+
+If customer provides new information, add it.
+
+If customer corrects old information, update it.
 
 ==================================================
 CURRENT MEMORY
@@ -193,41 +594,63 @@ CURRENT CUSTOMER MESSAGE
 ${message}
 
 ==================================================
-RESPONSE
+OUTPUT FORMAT
 ==================================================
 
-Give ONE natural conversational reply.
+Return ONLY valid JSON.
 
-Do not invent prices.
+No markdown.
+No code block.
+No explanation outside JSON.
 
-If customer asks price, explain that exact cost depends on requirements.
+Use exactly this structure:
 
-If customer gives phone/email, remember it and don't ask again.
-
-If customer changes requirement or industry, adapt.
-
-If customer says "I don't know" or "you suggest", suggest something useful instead of stopping.
+{
+  "reply": "natural conversational reply",
+  "memory": {
+    "industry": "",
+    "business": "",
+    "requirements": [],
+    "problems": [],
+    "users": "",
+    "platform": "",
+    "currentSystem": "",
+    "customerVolume": "",
+    "features": [],
+    "budget": "",
+    "timeline": "",
+    "contact": "",
+    "email": "",
+    "stage": "DISCOVERY",
+    "askedTopics": [],
+    "leadClosed": false
+  },
+  "leadClosed": false
+}
 
 IMPORTANT:
-Your main priority is a natural continuing conversation.
+
+- Preserve existing memory.
+- Add new information.
+- Do not remove previously known information.
+- Do not repeat questions already answered.
+- Ask only ONE next question.
+- If enough information is collected, move toward contact collection.
+- If contact is already available, close the lead.
 `;
 
-    /*
-    ============================================================
-    MODELS
-    ============================================================
-    */
+    // ============================================================
+    // GEMINI MODELS
+    // ============================================================
 
     const models = [
       "gemini-3.8-flash",
       "gemini-3.5-flash-lite"
     ];
 
-    /*
-    ============================================================
-    CALL GEMINI
-    ============================================================
-    */
+    // ============================================================
+    // GEMINI REQUEST
+    // ============================================================
 
     async function callGemini(model) {
 
@@ -243,11 +666,9 @@ Your main priority is a natural continuing conversation.
         },
 
         body: JSON.stringify({
-
           contents: [
             {
               role: "user",
-
               parts: [
                 {
                   text: prompt
@@ -257,18 +678,17 @@ Your main priority is a natural continuing conversation.
           ],
 
           generationConfig: {
-            temperature: 0.7,
-            maxOutputTokens: 300
+            temperature: 0.45,
+            maxOutputTokens: 700,
+            responseMimeType: "application/json"
           }
         })
       });
     }
 
-    /*
-    ============================================================
-    RETRY
-    ============================================================
-    */
+    // ============================================================
+    // CALL + RETRY
+    // ============================================================
 
     let response = null;
     let data = null;
@@ -307,11 +727,9 @@ Your main priority is a natural continuing conversation.
           }
 
           if (attempt < 2) {
-
             await new Promise(resolve =>
-              setTimeout(resolve, 1000 * attempt)
+              setTimeout(resolve, 1200 * attempt)
             );
-
           }
 
         } catch (error) {
@@ -323,11 +741,9 @@ Your main priority is a natural continuing conversation.
           };
 
           if (attempt < 2) {
-
             await new Promise(resolve =>
-              setTimeout(resolve, 1000 * attempt)
+              setTimeout(resolve, 1200 * attempt)
             );
-
           }
         }
       }
@@ -337,55 +753,44 @@ Your main priority is a natural continuing conversation.
       }
     }
 
-    /*
-    ============================================================
-    ALL GEMINI REQUESTS FAILED
-    ============================================================
-    */
+    // ============================================================
+    // GEMINI FAILURE
+    // ============================================================
 
     if (!response || !response.ok) {
 
-      return res.status(500).json({
-        error: "Gemini temporarily unavailable",
-        details: lastError
+      console.error("Gemini error:", lastError);
+
+      return res.status(200).json({
+        reply:
+          "Sorry sir, konjam technical issue vandhirukku. Neenga sonna requirement continue pannunga, naan note pannikiren.",
+        memory: currentMemory,
+        leadClosed: currentMemory.leadClosed
       });
     }
 
-    /*
-    ============================================================
-    GET GEMINI TEXT
-    ============================================================
-    */
+    // ============================================================
+    // GET GEMINI TEXT
+    // ============================================================
 
     let rawReply =
       data?.candidates?.[0]?.content?.parts?.[0]?.text;
 
     if (!rawReply) {
 
-      return res.status(500).json({
-        error: "No Gemini reply",
-        details: data
+      return res.status(200).json({
+        reply:
+          "Sorry sir, unga message proper-ah process aagala. Once again sollunga sir.",
+        memory: currentMemory,
+        leadClosed: currentMemory.leadClosed
       });
     }
 
     rawReply = rawReply.trim();
 
-    /*
-    ============================================================
-    TRY JSON
-    ============================================================
-    
-    JSON is OPTIONAL now.
-
-    If Gemini gives valid JSON:
-       use memory + reply.
-
-    If Gemini gives normal text:
-       use that text directly.
-
-    THIS PREVENTS THE CONVERSATION FROM STOPPING.
-    ============================================================
-    */
+    // ============================================================
+    // CLEAN JSON
+    // ============================================================
 
     let aiResult = null;
 
@@ -394,12 +799,6 @@ Your main priority is a natural continuing conversation.
       aiResult = JSON.parse(rawReply);
 
     } catch (error) {
-
-      /*
-      ----------------------------------------------------------
-      Try extracting JSON if Gemini wrapped it in markdown
-      ----------------------------------------------------------
-      */
 
       try {
 
@@ -427,16 +826,14 @@ Your main priority is a natural continuing conversation.
       }
     }
 
-    /*
-    ============================================================
-    CASE 1
-    VALID JSON RESPONSE
-    ============================================================
-    */
+    // ============================================================
+    // VALID AI RESULT
+    // ============================================================
 
     if (aiResult && typeof aiResult === "object") {
 
-      const aiMemory = aiResult.memory || {};
+      const aiMemory =
+        aiResult.memory || {};
 
       const newMemory = {
 
@@ -445,14 +842,29 @@ Your main priority is a natural continuing conversation.
           currentMemory.industry ||
           "",
 
+        business:
+          aiMemory.business ||
+          currentMemory.business ||
+          "",
+
         requirements:
           Array.isArray(aiMemory.requirements)
-            ? aiMemory.requirements
+            ? [
+                ...new Set([
+                  ...currentMemory.requirements,
+                  ...aiMemory.requirements
+                ])
+              ]
             : currentMemory.requirements,
 
         problems:
           Array.isArray(aiMemory.problems)
-            ? aiMemory.problems
+            ? [
+                ...new Set([
+                  ...currentMemory.problems,
+                  ...aiMemory.problems
+                ])
+              ]
             : currentMemory.problems,
 
         users:
@@ -470,6 +882,31 @@ Your main priority is a natural continuing conversation.
           currentMemory.currentSystem ||
           "",
 
+        customerVolume:
+          aiMemory.customerVolume ||
+          currentMemory.customerVolume ||
+          "",
+
+        features:
+          Array.isArray(aiMemory.features)
+            ? [
+                ...new Set([
+                  ...currentMemory.features,
+                  ...aiMemory.features
+                ])
+              ]
+            : currentMemory.features,
+
+        budget:
+          aiMemory.budget ||
+          currentMemory.budget ||
+          "",
+
+        timeline:
+          aiMemory.timeline ||
+          currentMemory.timeline ||
+          "",
+
         contact:
           aiMemory.contact ||
           currentMemory.contact ||
@@ -479,6 +916,21 @@ Your main priority is a natural continuing conversation.
           aiMemory.email ||
           currentMemory.email ||
           "",
+
+        stage:
+          aiMemory.stage ||
+          currentMemory.stage ||
+          "DISCOVERY",
+
+        askedTopics:
+          Array.isArray(aiMemory.askedTopics)
+            ? [
+                ...new Set([
+                  ...currentMemory.askedTopics,
+                  ...aiMemory.askedTopics
+                ])
+              ]
+            : currentMemory.askedTopics,
 
         leadClosed:
           typeof aiMemory.leadClosed === "boolean"
@@ -503,23 +955,14 @@ Your main priority is a natural continuing conversation.
             typeof aiResult.leadClosed === "boolean"
               ? aiResult.leadClosed
               : newMemory.leadClosed
+
         });
       }
     }
 
-    /*
-    ============================================================
-    CASE 2
-    GEMINI RETURNED NORMAL TEXT
-    ============================================================
-
-    IMPORTANT:
-    DO NOT THROW ERROR.
-
-    Just use Gemini's text as the reply.
-    Conversation continues.
-    ============================================================
-    */
+    // ============================================================
+    // FALLBACK IF JSON PARSING FAILS
+    // ============================================================
 
     return res.status(200).json({
 
@@ -533,9 +976,18 @@ Your main priority is a natural continuing conversation.
 
   } catch (error) {
 
-    return res.status(500).json({
-      error: "Server Error",
-      message: error.message
+    console.error("Server Error:", error);
+
+    return res.status(200).json({
+
+      reply:
+        "Sorry sir, konjam technical issue. Neenga sonna requirement-a continue pannunga.",
+
+      memory: req.body?.memory || {},
+
+      leadClosed:
+        !!req.body?.memory?.leadClosed
+
     });
   }
 }
