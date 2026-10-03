@@ -291,7 +291,8 @@ Send
 <div class="note">
 
 Voice input uses browser speech recognition.
-Gemini understands the transcript and conversation context.
+Mic ON = automatically listen after each AI reply.
+Speak AI ON = ElevenLabs voice reply.
 
 </div>
 
@@ -481,67 +482,54 @@ function updateMemoryBox() {
 
 
 function speakText(text) {
+  return new Promise((resolve) => {
+    if (!state.speaking || !text) {
+      resolve();
+      return;
+    }
 
-  if (!state.speaking || !text)
-    return;
-
-  fetch("/api/tts", {
-
-    method: "POST",
-
-    headers: {
-      "Content-Type":
-        "application/json"
-    },
-
-    body: JSON.stringify({
-      text: text
+    fetch("/api/tts", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({text})
     })
+    .then(async response => {
+      if (!response.ok) throw new Error("TTS failed");
 
-  })
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const audio = new Audio(url);
 
-  .then(async response => {
+      audio.onended = () => {
+        URL.revokeObjectURL(url);
+        resolve();
+      };
 
-    if (!response.ok)
-      throw new Error(
-        "TTS failed"
-      );
+      audio.onerror = () => {
+        URL.revokeObjectURL(url);
+        resolve();
+      };
 
-    const blob =
-      await response.blob();
-
-    const url =
-      URL.createObjectURL(blob);
-
-    const audio =
-      new Audio(url);
-
-    audio.onended = () => {
-      URL.revokeObjectURL(url);
-    };
-
-    audio.play().catch(() => {});
-
-  })
-
-  .catch(error => {
-
-    console.error(
-      "ElevenLabs TTS:",
-      error
-    );
-
+      audio.play().catch(error => {
+        console.error("Audio play:", error);
+        URL.revokeObjectURL(url);
+        resolve();
+      });
+    })
+    .catch(error => {
+      console.error("ElevenLabs TTS:", error);
+      resolve();
+    });
   });
-
 }
-
 
 async function sendMessage(rawText) {
 
   const text = String(rawText || "").trim();
+  if (!text || !state.running) return;
 
-  if (!text || !state.running)
-    return;
+  // Do not listen while Gemini/ElevenLabs is processing.
+  stopRecognition();
 
   addMessage("user", text);
   addHistory("user", text);
@@ -552,12 +540,9 @@ async function sendMessage(rawText) {
   micSendBtn.disabled = true;
 
   try {
-
     const response = await fetch("/api/chat", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
+      headers: {"Content-Type": "application/json"},
       body: JSON.stringify({
         message: text,
         history: state.history,
@@ -565,23 +550,19 @@ async function sendMessage(rawText) {
       })
     });
 
-    // Read as text first so even a Vercel/HTML/plain-text error is visible.
     const rawResponse = await response.text();
-
     let data = {};
 
     try {
       data = rawResponse ? JSON.parse(rawResponse) : {};
-    } catch (parseError) {
+    } catch {
       throw new Error(
         "Server returned non-JSON response (HTTP " +
-        response.status + "): " +
-        rawResponse.slice(0, 500)
+        response.status + "): " + rawResponse.slice(0, 500)
       );
     }
 
     if (!response.ok) {
-
       const details = data.details
         ? JSON.stringify(data.details)
         : "";
@@ -604,68 +585,62 @@ async function sendMessage(rawText) {
     const reply = String(data.reply || "").trim();
 
     if (!reply) {
-      throw new Error(
-        "API returned success but reply is empty"
-      );
+      throw new Error("API returned success but reply is empty");
     }
 
     addMessage("assistant", reply);
     addHistory("assistant", reply);
-    speakText(reply);
     updateMemoryBox();
 
-  } catch (error) {
+    // Wait for Bella to finish before listening again.
+    await speakText(reply);
 
+  } catch (error) {
     console.error("KIKT /api/chat ERROR:", error);
 
-    // TEMPORARY DEBUG MESSAGE: this exposes the real backend error.
     const errorMessage =
-      "AI ERROR: " +
-      (error?.message || "Unknown error");
+      "AI connection-la temporary problem irukku. Konjam try pannunga.";
 
     addMessage("assistant", errorMessage);
     addHistory("assistant", errorMessage);
 
-  } finally {
+    await speakText(errorMessage);
 
+  } finally {
     typing.style.display = "none";
     sendBtn.disabled = false;
     micSendBtn.disabled = false;
+
+    // Mic ON = automatically listen for the next customer message.
+    if (state.running && state.mic) {
+      setTimeout(() => startRecognition(), 350);
+    }
   }
 }
-
-
 
 function startAI() {
 
   state.running = true;
-
   updateStatus();
-
 
   if (state.history.length === 0) {
 
     const greeting =
       "Vanakkam sir! KIKT Software Solutions-la irundhu pesuren. Unga business-la enna process automate panna venum illa enna problem-ku software venum-nu sollunga.";
 
-    addMessage(
-      "assistant",
-      greeting
-    );
+    addMessage("assistant", greeting);
+    addHistory("assistant", greeting);
 
-    addHistory(
-      "assistant",
-      greeting
-    );
+    speakText(greeting).then(() => {
+      if (state.running && state.mic) {
+        startRecognition();
+      }
+    });
 
-    speakText(
-      greeting
-    );
-
+  } else if (state.mic) {
+    startRecognition();
   }
-
 }
-
 
 function stopAI() {
 
@@ -778,25 +753,28 @@ function setupRecognition() {
   recognition.onresult =
     event => {
 
-      const result =
-        event.results[
-          event.results.length - 1
-        ][0].transcript;
+      let finalText = "";
 
-      input.value =
-        result;
-
-      if (
-        state.running &&
-        result.trim()
+      for (
+        let i = event.resultIndex;
+        i < event.results.length;
+        i++
       ) {
-
-        sendMessage(
-          result
-        );
-
+        if (event.results[i].isFinal) {
+          finalText +=
+            event.results[i][0].transcript + " ";
+        }
       }
 
+      finalText = finalText.trim();
+
+      if (!finalText) return;
+
+      input.value = finalText;
+
+      if (state.running) {
+        sendMessage(finalText);
+      }
     };
 
 
