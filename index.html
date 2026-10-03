@@ -254,8 +254,6 @@ Clear Chat
 </div>
 
 
-<audio id="voiceAudio" preload="auto" playsinline></audio>
-
 <div id="messages"></div>
 
 
@@ -293,8 +291,7 @@ Send
 <div class="note">
 
 Voice input uses browser speech recognition.
-Mic ON = automatically listen after each AI reply.
-Speak AI ON = ElevenLabs voice reply.
+Gemini understands the transcript and conversation context.
 
 </div>
 
@@ -385,11 +382,6 @@ const statusText =
 
 const memoryBox =
   document.getElementById("memoryBox");
-
-const voiceAudio =
-  document.getElementById("voiceAudio");
-
-let audioUnlocked = false;
 
 
 function addMessage(role, text) {
@@ -488,112 +480,68 @@ function updateMemoryBox() {
 }
 
 
-function unlockAudio() {
-  return new Promise((resolve) => {
-    if (audioUnlocked) {
-      resolve();
-      return;
-    }
-
-    try {
-      voiceAudio.src =
-        "data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQAAAAA=";
-      voiceAudio.muted = true;
-
-      const p = voiceAudio.play();
-
-      if (p && typeof p.then === "function") {
-        p.then(() => {
-          voiceAudio.pause();
-          voiceAudio.currentTime = 0;
-          voiceAudio.muted = false;
-          audioUnlocked = true;
-          resolve();
-        }).catch(() => {
-          voiceAudio.muted = false;
-          resolve();
-        });
-      } else {
-        voiceAudio.muted = false;
-        audioUnlocked = true;
-        resolve();
-      }
-    } catch (error) {
-      console.error("Audio unlock:", error);
-      voiceAudio.muted = false;
-      resolve();
-    }
-  });
-}
-
 function speakText(text) {
-  return new Promise((resolve) => {
-    if (!state.speaking || !text) {
-      resolve();
-      return;
-    }
 
-    fetch("/api/tts", {
-      method: "POST",
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({text})
+  if (!state.speaking || !text)
+    return;
+
+  fetch("/api/tts", {
+
+    method: "POST",
+
+    headers: {
+      "Content-Type":
+        "application/json"
+    },
+
+    body: JSON.stringify({
+      text: text
     })
-    .then(async response => {
-      if (!response.ok) {
-        throw new Error("TTS failed: HTTP " + response.status);
-      }
 
-      const blob = await response.blob();
-      const url = URL.createObjectURL(blob);
+  })
 
-      voiceAudio.onended = () => {
-        URL.revokeObjectURL(url);
-        resolve();
-      };
+  .then(async response => {
 
-      voiceAudio.onerror = () => {
-        console.error("Bella audio playback error");
-        URL.revokeObjectURL(url);
-        resolve();
-      };
+    if (!response.ok)
+      throw new Error(
+        "TTS failed"
+      );
 
-      voiceAudio.src = url;
-      voiceAudio.muted = false;
-      voiceAudio.volume = 1;
+    const blob =
+      await response.blob();
 
-      try {
-        const playPromise = voiceAudio.play();
+    const url =
+      URL.createObjectURL(blob);
 
-        if (playPromise && typeof playPromise.then === "function") {
-          await playPromise;
-        }
-      } catch (error) {
-        console.error("Bella audio play:", error);
+    const audio =
+      new Audio(url);
 
-        // If browser blocked the first attempt, try once after a
-        // short delay. The persistent audio element has already
-        // been unlocked by the Start AI button.
-        setTimeout(() => {
-          voiceAudio.play().catch(err =>
-            console.error("Bella retry:", err)
-          );
-        }, 150);
-      }
-    })
-    .catch(error => {
-      console.error("ElevenLabs TTS:", error);
-      resolve();
-    });
+    audio.onended = () => {
+      URL.revokeObjectURL(url);
+    };
+
+    audio.play().catch(() => {});
+
+  })
+
+  .catch(error => {
+
+    console.error(
+      "ElevenLabs TTS:",
+      error
+    );
+
   });
+
 }
+
 
 async function sendMessage(rawText) {
 
   const text = String(rawText || "").trim();
-  if (!text || !state.running) return;
 
-  // Do not listen while Gemini/ElevenLabs is processing.
-  stopRecognition();
+  if (!text || !state.running)
+    return;
 
   addMessage("user", text);
   addHistory("user", text);
@@ -604,9 +552,12 @@ async function sendMessage(rawText) {
   micSendBtn.disabled = true;
 
   try {
+
     const response = await fetch("/api/chat", {
       method: "POST",
-      headers: {"Content-Type": "application/json"},
+      headers: {
+        "Content-Type": "application/json"
+      },
       body: JSON.stringify({
         message: text,
         history: state.history,
@@ -614,19 +565,23 @@ async function sendMessage(rawText) {
       })
     });
 
+    // Read as text first so even a Vercel/HTML/plain-text error is visible.
     const rawResponse = await response.text();
+
     let data = {};
 
     try {
       data = rawResponse ? JSON.parse(rawResponse) : {};
-    } catch {
+    } catch (parseError) {
       throw new Error(
         "Server returned non-JSON response (HTTP " +
-        response.status + "): " + rawResponse.slice(0, 500)
+        response.status + "): " +
+        rawResponse.slice(0, 500)
       );
     }
 
     if (!response.ok) {
+
       const details = data.details
         ? JSON.stringify(data.details)
         : "";
@@ -649,75 +604,77 @@ async function sendMessage(rawText) {
     const reply = String(data.reply || "").trim();
 
     if (!reply) {
-      throw new Error("API returned success but reply is empty");
+      throw new Error(
+        "API returned success but reply is empty"
+      );
     }
 
     addMessage("assistant", reply);
     addHistory("assistant", reply);
+    speakText(reply);
     updateMemoryBox();
 
-    // Wait for Bella to finish before listening again.
-    await speakText(reply);
-
   } catch (error) {
+
     console.error("KIKT /api/chat ERROR:", error);
 
+    // TEMPORARY DEBUG MESSAGE: this exposes the real backend error.
     const errorMessage =
-      "AI connection-la temporary problem irukku. Konjam try pannunga.";
+      "AI ERROR: " +
+      (error?.message || "Unknown error");
 
     addMessage("assistant", errorMessage);
     addHistory("assistant", errorMessage);
 
-    await speakText(errorMessage);
-
   } finally {
+
     typing.style.display = "none";
     sendBtn.disabled = false;
     micSendBtn.disabled = false;
-
-    // Mic ON = automatically listen for the next customer message.
-    if (state.running && state.mic) {
-      setTimeout(() => startRecognition(), 350);
-    }
   }
 }
+
+
 
 async function startAI() {
 
   state.running = true;
 
-  // Enable voice input automatically when AI starts.
-  state.mic = true;
+  // IMPORTANT: Start AI must NOT turn the browser microphone on.
+  // User must click "Mic: OFF" -> "Mic: ON" manually.
+  state.mic = false;
+  state.listening = false;
 
-  micBtn.textContent = "Mic: ON";
-  micBtn.classList.add("active");
+  micBtn.textContent = "Mic: OFF";
+  micBtn.classList.remove("active");
+  micSendBtn.classList.remove("active");
 
   updateStatus();
 
-  // This is called directly from the Start AI button click.
-  // It unlocks browser audio autoplay for Bella.
-  await unlockAudio();
 
   if (state.history.length === 0) {
 
     const greeting =
       "Vanakkam sir! KIKT Software Solutions-la irundhu pesuren. Unga business-la enna process automate panna venum illa enna problem-ku software venum-nu sollunga.";
 
-    addMessage("assistant", greeting);
-    addHistory("assistant", greeting);
+    addMessage(
+      "assistant",
+      greeting
+    );
 
-    await speakText(greeting);
+    addHistory(
+      "assistant",
+      greeting
+    );
 
-    if (state.running && state.mic) {
-      setTimeout(() => startRecognition(), 300);
-    }
-
-  } else if (state.mic) {
-
-    startRecognition();
+    speakText(
+      greeting
+    );
 
   }
+
 }
+
 
 function stopAI() {
 
@@ -817,59 +774,38 @@ function setupRecognition() {
         event.error
       );
 
-      state.listening = false;
+      state.listening =
+        false;
 
       micSendBtn.classList.remove(
         "active"
       );
 
-      if (event.error === "not-allowed" ||
-          event.error === "service-not-allowed") {
-
-        micBtn.textContent = "Mic: OFF";
-        micBtn.classList.remove("active");
-        state.mic = false;
-
-        addMessage(
-          "assistant",
-          "Mic permission block aagirukku sir. Chrome address bar-la microphone permission Allow pannunga."
-        );
-
-      } else if (event.error === "no-speech") {
-
-        // Keep Mic ON and listen again.
-        if (state.running && state.mic) {
-          setTimeout(() => startRecognition(), 500);
-        }
-      }
     };
 
 
   recognition.onresult =
     event => {
 
-      let finalText = "";
+      const result =
+        event.results[
+          event.results.length - 1
+        ][0].transcript;
 
-      for (
-        let i = event.resultIndex;
-        i < event.results.length;
-        i++
+      input.value =
+        result;
+
+      if (
+        state.running &&
+        result.trim()
       ) {
-        if (event.results[i].isFinal) {
-          finalText +=
-            event.results[i][0].transcript + " ";
-        }
+
+        sendMessage(
+          result
+        );
+
       }
 
-      finalText = finalText.trim();
-
-      if (!finalText) return;
-
-      input.value = finalText;
-
-      if (state.running) {
-        sendMessage(finalText);
-      }
     };
 
 
@@ -1026,10 +962,6 @@ micSendBtn.addEventListener(
 
     }
 
-    // Manual microphone button should also enable the main Mic state.
-    state.mic = true;
-    micBtn.textContent = "Mic: ON";
-    micBtn.classList.add("active");
 
     if (state.listening) {
 
@@ -1111,7 +1043,7 @@ clearBtn.addEventListener(
 
     if (state.running) {
 
-      startAI();
+      await startAI();
 
     }
 
